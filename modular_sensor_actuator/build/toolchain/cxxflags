@@ -1,0 +1,7 @@
+-Wno-frame-address
+-mlongcalls
+-fno-builtin-memcpy
+-fno-builtin-memset
+-fno-builtin-bzero
+"-specs=/home/mike/CodeProjects/Portfolio/embedded/modular_sensor_actuator/build/specs/picolibc.specs"
+-fno-rtti
