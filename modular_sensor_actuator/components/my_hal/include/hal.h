@@ -1,21 +1,48 @@
 /******************************************************************************
- * File: hal.h
- * 
- * @brief Hardware Abstraction Layer (HAL) interface.
+ * @file: hal_gpio.h
+ * @brief: Platform-agnostic General Purpose Input/Output (GPIO) HAL API.
  *
- * Description: Provides a portable API for interacting with hardware through
- *      platform-specific implementations. This allows application code
- *      to remain independent of the underlying hardware or SDK.
- * 
- * Author: Michael Van Gool
- * Date: 2026-05-04
- * License: MIT
-******************************************************************************/
+ * This file establishes a universal, hardware-independent interface for managing
+ * digital I/O pins. Application business logic uses these contracts to read inputs,
+ * toggle outputs, and attach interrupt routines without needing exposure to the
+ * proprietary register mapping or GPIO driver configurations of the target MCU.
+ *
+ * @author: Michael Van Gool
+ * @date: 2026-05-04
+ * @license: MIT License
+ *
+ * Copyright (c) 2026 Michael Van Gool
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ ******************************************************************************/
+
+#ifndef HAL_GPIO_H_
+#define HAL_GPIO_H_
+
+// Universal pin definitions, direction enums (INPUT, OUTPUT), 
+// resistor pulling options, and generic GPIO API prototypes go here...
+
+#endif /* HAL_GPIO_H_ */
 
 #ifndef __HAL_H__ //Hardware Abstraction Layer
 #define __HAL_H__
 
-#include "../../../main/utils.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -63,6 +90,13 @@ typedef enum {
     HAL_GPIO_LOW = 0,
     HAL_GPIO_HIGH
 } hal_gpio_level_t;
+
+typedef enum {
+    HAL_LOG_ERR = 1,
+    HAL_LOG_WARN,
+    HAL_LOG_INFO,
+    HAL_LOG_DEBUG
+} hal_log_level_t;
 
 
 /**
@@ -169,6 +203,25 @@ typedef int64_t (*hal_timer_get_time)(void);
  */
 typedef hal_status_t (*hal_gpio_install_isr_service)(hal_intr_flag_t intr_flags);
 
+/**
+ * @brief Function pointer type definition for system-wide logging outputs.
+ *
+ * This typedef establishes a standardized contract for all logging backends. 
+ * By using a function pointer, the upper-level application can register different 
+ * logger implementations (e.g., UART terminal console, network socket syslog, 
+ * or flash memory flash logs) seamlessly without modifying the core HAL.
+ *
+ * @param[in] level  The logging severity level (e.g., DEBUG, INFO, WARN, ERROR).
+ * @param[in] tag    A null-terminated string representing the software component 
+ * emitting the log (used for targeted filtering).
+ * @param[in] fmt    A standard C format control string (identical to printf).
+ * @param[in] ...    A variable-length argument list matching the format specifiers 
+ * defined in the `fmt` parameter.
+ *
+ * @note Implementations of this function pointer must handle variadic arguments 
+ * internally using the standard C `<stdarg.h>` macros (`va_list`, `va_start`, 
+ * `vprintf`/`vsnprintf`, and `va_end`).
+ */
 typedef void (*hal_log_info)(uint8_t level, const char* tag, const char* fmt, ...);
 
 /* Active GPIO implementation. */
@@ -192,6 +245,28 @@ void hal_rom_delay_us_default(uint32_t delay_us);
 int64_t hal_timer_get_time_default(void);
 hal_status_t hal_gpio_install_isr_service_default(hal_intr_flag_t intr_flags);
 void hal_log_info_default(uint8_t level, const char* tag, const char* fmt, ...);
+
+/* HAL functions */
+/**
+ * @brief Converts a HAL status code enum into a human-readable string.
+ *
+ * This utility function translates numeric HAL error codes into their literal 
+ * text representations. It is primarily used to enhance readability in debug 
+ * logging outputs, console telemetry streams, or error reporting systems.
+ *
+ * @param[in] status  The HAL status enumeration value to be converted.
+ *
+ * @return A constant pointer (`const char*`) to a null-terminated string literal 
+ * representing the status name. If the status code is unrecognized, a default 
+ * catch-all error string is returned.
+ *
+ * @warning The returned string pointer references a read-only literal permanently 
+ * stored in Flash/ROM memory (.rodata). The calling application **must not** * attempt to modify the characters or free this pointer via `free()`, as doing 
+ * so will trigger a catastrophic hardware memory fault.
+ */
+const char* hal_status_to_string(hal_status_t status);
+
+hal_status_t is_unit_test();
 
 #ifdef __cplusplus
 }

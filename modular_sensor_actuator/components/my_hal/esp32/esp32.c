@@ -1,11 +1,17 @@
 /******************************************************************************
- * File: esp32.c
- * Description: Implementation of the Harwdware Abstraction Layer (HAL) for ESP32.
- * Provides Interaction with the hardware specific functions not provided by OS.
- * Author: Michael Van Gool
- * Date: 2026-05-04
- * License: MIT
-******************************************************************************/
+ * @file: esp32.c
+ * @brief: Target-specific system initialization and core management for ESP32.
+ *
+ * This file implements the concrete system-wide hooks required to bootstrap
+ * the ESP32 silicon platform. It manages global hardware initializations,
+ * system-level status mappings, memory-heap allocations, and power-management
+ * configuration routines that are not handled directly by the operating system.
+ *
+ * @author: Michael Van Gool
+ * @date: 2026-05-04
+ * @license: MIT License (See header file for full license conditions)
+ * * Copyright (c) 2026 Michael Van Gool. All rights reserved.
+ ******************************************************************************/
 #include "esp32.h"
 
 hal_gpio_set_direction          hal_gpio_set_direction_func         = esp32_gpio_set_direction;
@@ -84,7 +90,7 @@ hal_status_t esp32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type)
         case HAL_GPIO_INTR_LOW_LEVEL:    esp_type = GPIO_INTR_LOW_LEVEL; break;
         case HAL_GPIO_INTR_HIGH_LEVEL:   esp_type = GPIO_INTR_HIGH_LEVEL; break;
         default:
-            return HAL_ERROR_INVALID_ARG;  // invalid HAL type
+            return HAL_ERROR_INVALID_ARG;
     }
 
     esp_err_t ret = gpio_set_intr_type((gpio_num_t)pin, esp_type);

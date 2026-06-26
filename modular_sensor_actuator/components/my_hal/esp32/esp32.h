@@ -1,11 +1,16 @@
 /******************************************************************************
- * File: esp32.h
- * Description: Implementation of the Harwdware Abstraction Layer (HAL) for ESP32.
- * Provides Interaction with the hardware specific functions not provided by OS.
- * Author: Michael Van Gool
- * Date: 2026-05-04
- * License: MIT
-******************************************************************************/
+ * @file: esp32.h
+ * @brief: Target-specific Hardware Abstraction Configuration for ESP32.
+ *
+ * This header maps physical silicon layout components, pin multiplexer nodes, 
+ * and declares target-specific driver extensions for the Espressif ESP32 
+ * platform architectures.
+ *
+ * @author: Michael van Gool
+ * @date: 2026-06-26
+ * @license: MIT License
+ * Copyright (c) 2026 Michael Van Gool  . All rights reserved.
+ ******************************************************************************/
 
 #ifndef __ESP32_H__
 #define __ESP32_H__
@@ -113,6 +118,21 @@ int64_t esp32_timer_get_time();
  */
 hal_status_t esp32_gpio_install_isr_service(hal_intr_flag_t flag);
 
+/**
+ * @brief Thread-safe formatted logging at the INFO severity level with contextual tagging.
+ *
+ * Formats and routes log streams through the ESP32 UART console interface. This function
+ * appends structured system metadata (runtime tick counts and runtime component tags) to the 
+ * output stream.
+ *
+ * @param[in] level  The target logging severity framework tier (e.g., ESP_LOG_INFO equivalent).
+ * @param[in] tag    Null-terminated string representing the specific software component or module.
+ * @param[in] fmt    Null-terminated format string containing standard printf-style specifiers.
+ * @param[in] ...    Variadic arguments corresponding to the parameters defined in the fmt string.
+ *
+ * @note This function is designed to be completely non-blocking and thread-safe when invoked
+ * across multiple concurrent RTOS tasks.
+ */
 void esp32_log_info(uint8_t level, const char *tag, const char *fmt, ...);
 
 

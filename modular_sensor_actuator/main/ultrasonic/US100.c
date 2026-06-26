@@ -1,4 +1,49 @@
+/**
+ * @file US100.c
+ * @brief Asynchronous Concrete Driver Implementation for the US100 Ultrasonic Sensor
+ *
+ * @details
+ * This module provides the concrete execution logic for the generic distance sensing 
+ * interface (`ultrasonic.h`). It specializes in driving the US100 transceiver module 
+ * using an event-driven, non-blocking interrupt paradigm. 
+ *
+ * Rather than stalling the CPU during the sensor's echo transmission flight window, 
+ * this implementation configures a physical GPIO line as an edge-triggered interrupt. 
+ * High-precision hardware timestamps are captured instantly on both rising and falling 
+ * edges within a low-overhead Interrupt Service Routine (ISR), freeing the main processor 
+ * to handle concurrent application tasks.
+ *
+ * @section Interrupt_Lifecycle Asynchronous ISR State Machine
+ * * GPIO Echo Line          State Action / Side Effects
+ * __________________
+ * |                  |
+ * _____|                  |_____
+ * ^                  ^
+ * | [1] Rising Edge  | [2] Falling Edge
+ * |                  |
+ * +-- Captures       +-- Captures end_time snapshot.
+ * start_time.    +-- Issues non-blocking OSAL signaling
+ * primitive to notify waiting task.
+ *
+ * @section Implementation_Specs Peripheral Dependencies & Math
+ * - Time-of-Flight Derivation: Distance computation utilizes the microsecond delta 
+ * ($\Delta t = \text{end\_time} - \text{start\_time}$) scaled against the environmental 
+ * speed of sound constant at standard room temperature (~343 m/s).
+ * - Encapsulated State Management: Leverages explicit pass-by-reference pointer tracking 
+ * (`ultrasonic_config_t*`) to update instance parameters safely across asynchronous execution 
+ * boundaries without global scope leaks.
+ * - Thread-Safe Notification: Uses target-safe OSAL mechanisms within the ISR context 
+ * to wake blocked application loops immediately upon lifecycle completion.
+ *
+ * @note This file is compiled selectively by the build system to bind the abstract 
+ * interface layout specifically to the US100 hardware target layout.
+ *
+ * @copyright Copyright (c) 2026. All Rights Reserved.
+ */
+
 #include "ultrasonic.h"
+
+static void HAL_GPIO_ISR_ATTR echo_isr_handler(void*);
 
 static uint8_t gotten_intr_flag = false;
 
