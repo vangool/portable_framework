@@ -1,0 +1,5 @@
+if(EXISTS "/home/mike/CodeProjects/Portfolio/embedded/modular_sensor_actuator/build_test/ultrasonic_tests[1]_tests.cmake")
+  include("/home/mike/CodeProjects/Portfolio/embedded/modular_sensor_actuator/build_test/ultrasonic_tests[1]_tests.cmake")
+else()
+  add_test(ultrasonic_tests_NOT_BUILT ultrasonic_tests_NOT_BUILT)
+endif()

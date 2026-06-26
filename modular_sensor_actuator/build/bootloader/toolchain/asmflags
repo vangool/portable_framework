@@ -1,0 +1,6 @@
+"-specs=/home/mike/CodeProjects/Portfolio/embedded/modular_sensor_actuator/build/bootloader/specs/picolibc.specs"
+-Wno-frame-address
+-mlongcalls
+-fno-builtin-memcpy
+-fno-builtin-memset
+-fno-builtin-bzero
