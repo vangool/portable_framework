@@ -94,7 +94,6 @@ osal_result_t freertos_create_task(
 
 osal_base_type freertos_pop_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
 {
-    osal_base_type ret = 0;
     return (osal_base_type)xQueueReceive((QueueHandle_t) queue.queue, pvBuffer, (TickType_t) wait_time);
 }
 

@@ -2,6 +2,7 @@
 # Target Build Artifacts (Compiled Binaries, Object Files, Map Files)
 #==============================================================================
 build/
+build_test/
 Debug/
 Release/
 bin/
