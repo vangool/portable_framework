@@ -44,6 +44,7 @@
 #define __HAL_H__
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -55,10 +56,11 @@ extern "C" {
 #endif
 
 typedef enum {
-    HAL_OK = 0,
+    HAL_STATUS_OK = 0,
     HAL_ERROR_INVALID_ARG,
     HAL_ERROR_GENERAL,
-    HAL_ERROR_DEFAULT_IMPLEMENTATION
+    HAL_ERROR_DEFAULT_IMPLEMENTATION,
+    HAL_ERROR_RESTRICTED
 } hal_status_t;
 
 typedef enum {
@@ -75,7 +77,11 @@ typedef enum {
     HAL_GPIO_MODE_INPUT,
     HAL_GPIO_MODE_OUTPUT,
     HAL_GPIO_MODE_OUTPUT_OD,
-    HAL_GPIO_MODE_INPUT_OUTPUT
+    HAL_GPIO_MODE_INPUT_OUTPUT,     // Push-Pull Bidirectional (Great for ESP32)
+    HAL_GPIO_MODE_INPUT_OUTPUT_OD,
+
+    HAL_GPIO_MODE_ANALOG,
+    HAL_GPIO_MODE_AF_PP
 } hal_gpio_config_t;
 
 typedef enum {
@@ -107,9 +113,9 @@ typedef enum {
  * @param pin GPIO pin number.
  * @param direction GPIO direction (input or output).
  *
- * @return HAL_OK on success, otherwise an error code.
+ * @return HAL_STATUS_OK on success, otherwise an error code.
  */
-typedef hal_status_t (*hal_gpio_set_direction)(uint8_t pin, uint8_t direction);
+typedef hal_status_t (*hal_gpio_set_direction)(uint8_t pin, hal_gpio_config_t direction);
 
 /**
  * @brief Configure the level of a GPIO pin.
@@ -119,9 +125,9 @@ typedef hal_status_t (*hal_gpio_set_direction)(uint8_t pin, uint8_t direction);
  * @param pin GPIO pin number.
  * @param direction GPIO direction (input or output).
  *
- * @return HAL_OK on success, otherwise an error code.
+ * @return HAL_STATUS_OK on success, otherwise an error code.
  */
-typedef hal_status_t (*hal_gpio_set_level)(uint8_t pin, uint8_t level);
+typedef hal_status_t (*hal_gpio_set_level)(uint8_t pin, hal_gpio_level_t level);
 
 /**
  * @brief Read the level of a GPIO pin.
@@ -236,8 +242,8 @@ extern hal_gpio_install_isr_service hal_gpio_install_isr_service_func;
 extern hal_log_info hal_log;
 
 /* Default GPIO implementation. */
-hal_status_t hal_gpio_set_direction_default(uint8_t pin, uint8_t direction);
-hal_status_t hal_gpio_set_level_default(uint8_t pin, uint8_t level);
+hal_status_t hal_gpio_set_direction_default(uint8_t pin, hal_gpio_config_t direction);
+hal_status_t hal_gpio_set_level_default(uint8_t pin, hal_gpio_level_t level);
 int8_t hal_gpio_get_level_default(uint8_t pin);
 hal_status_t hal_gpio_set_intr_type_default(uint8_t pin, hal_intr_type_t type);
 hal_status_t hal_gpio_isr_handler_add_default(uint8_t gpio_pin, void* isr_handler, void* args);

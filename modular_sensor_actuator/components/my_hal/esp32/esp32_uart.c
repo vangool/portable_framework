@@ -38,7 +38,7 @@ static hal_status_t convert_to_ESP32_word_length(hal_uart_data_bits_t hal_word, 
     
         default:                        return HAL_ERROR_INVALID_ARG;
     }
-    return HAL_OK;
+    return HAL_STATUS_OK;
 }
 
 static hal_status_t convert_to_ESP32_parity(hal_uart_parity_t hal_parity, uart_parity_t* parity)
@@ -51,7 +51,7 @@ static hal_status_t convert_to_ESP32_parity(hal_uart_parity_t hal_parity, uart_p
 
         default:                    return HAL_ERROR_INVALID_ARG;
     }
-    return HAL_OK;
+    return HAL_STATUS_OK;
 }
 
 static hal_status_t convert_to_ESP32_stop_bits(hal_uart_stop_bits_t hal_stop_bits, uart_stop_bits_t* stop_bits)
@@ -64,7 +64,7 @@ static hal_status_t convert_to_ESP32_stop_bits(hal_uart_stop_bits_t hal_stop_bit
     
         default:                        return HAL_ERROR_INVALID_ARG;
     }
-    return HAL_OK;
+    return HAL_STATUS_OK;
 }
 
 
@@ -80,7 +80,7 @@ static hal_status_t convert_to_ESP32_flow_ctrl(hal_uart_flow_control_t hal_flow_
     
         default:                    return HAL_ERROR_INVALID_ARG;
     }
-    return HAL_OK;
+    return HAL_STATUS_OK;
 }
 
 hal_status_t esp32_uart_init(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin)
@@ -96,7 +96,7 @@ hal_status_t esp32_uart_init(hal_uart_config_t* config, uint8_t transmit_pin, ui
         convert_to_ESP32_stop_bits(config->stop_bits, &stop_bits) |
         convert_to_ESP32_flow_ctrl(config->flow_ctrl, &flow_ctrl);
     
-    if(ret != HAL_OK)
+    if(ret != HAL_STATUS_OK)
         return HAL_ERROR_INVALID_ARG;
     
     uart_config_t uart_config = 
@@ -125,7 +125,7 @@ hal_status_t esp32_uart_init(hal_uart_config_t* config, uint8_t transmit_pin, ui
             UART_PIN_NO_CHANGE
         )
     );
-    return HAL_OK;
+    return HAL_STATUS_OK;
 }
 
 void esp32_uart_receive()

@@ -35,7 +35,7 @@ static hal_status_t hal_translate_status(esp_err_t status)
 {
     switch(status) 
     {
-        case ESP_OK:                return HAL_OK;
+        case ESP_OK:                return HAL_STATUS_OK;
         case ESP_ERR_INVALID_ARG:   return HAL_ERROR_INVALID_ARG;
         default:                    return HAL_ERROR_GENERAL;
     }
@@ -60,13 +60,37 @@ static uint32_t hal_to_esp_intr_flag(hal_intr_type_t flag)
     }
 }
 
-hal_status_t esp32_gpio_set_direction(uint8_t pin, uint8_t direction)
+hal_gpio_config_t esp32_translate_gpio_mode(hal_gpio_config_t mode)
 {
+    switch (generic_mode) {
+        case HAL_GPIO_MODE_DISABLE:         return GPIO_MODE_DISABLE;
+        case HAL_GPIO_MODE_INPUT:           return GPIO_MODE_INPUT;
+        case HAL_GPIO_MODE_OUTPUT:          return GPIO_MODE_OUTPUT;
+        case HAL_GPIO_MODE_OUTPUT_OD:       return GPIO_MODE_OUTPUT_OD;
+        case HAL_GPIO_MODE_INPUT_OUTPUT:    return GPIO_MODE_INPUT_OUTPUT;
+        case HAL_GPIO_MODE_INPUT_OUTPUT_OD: return GPIO_MODE_INPUT_OUTPUT_OD;
+        
+        case HAL_GPIO_MODE_ANALOG:      
+        case HAL_GPIO_MODE_ALT_FUNCTION:
+            return GPIO_MODE_DISABLE; 
+            
+        default:                        return GPIO_MODE_DISABLE;
+    }
+}
+
+hal_status_t esp32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
+{
+    switch (direction)
+    {
+        case HAL_GPIO_MODE_AF_PP:           return HAL_ERROR_INVALID_ARG;
+        case HAL_GPIO_MODE_INPUT_ANALOG:    return HAL_ERROR_INVALID_ARG;
+    }
+
     esp_err_t ret = gpio_set_direction(pin, direction);
     return hal_translate_status(ret);
 }
 
-hal_status_t esp32_gpio_set_level(uint8_t pin, uint8_t level)
+hal_status_t esp32_gpio_set_level(uint8_t pin, hal_gpio_level_t level)
 {
     esp_err_t ret = gpio_set_level(pin, level);
     return hal_translate_status(ret);

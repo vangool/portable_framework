@@ -26,7 +26,7 @@ hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = hal_gpio_i
 hal_status_t is_unit_test()
 {
     #ifdef UNIT_TEST
-        return HAL_OK;
+        return HAL_STATUS_OK;
     #else
         return HAL_ERROR_DEFAULT_IMPLEMENTATION;
     #endif
@@ -36,7 +36,7 @@ const char* hal_status_to_string(hal_status_t status)
 {
     switch (status)
     {
-        case HAL_OK:                            return "HAL_STATUS_OK";
+        case HAL_STATUS_OK:                     return "HAL_STATUS_OK";
         case HAL_ERROR_GENERAL:                 return "HAL_ERROR_GENERAL";
         case HAL_ERROR_INVALID_ARG:             return "HAL_ERROR_INVALID_ARG";
         case HAL_ERROR_DEFAULT_IMPLEMENTATION:  return "HAL_ERROR_DEFAULT_IMPLEMENTATION";
@@ -44,12 +44,12 @@ const char* hal_status_to_string(hal_status_t status)
     }
 }
 
-hal_status_t hal_gpio_set_direction_default(uint8_t pin, uint8_t direction)
+hal_status_t hal_gpio_set_direction_default(uint8_t pin, hal_gpio_config_t direction)
 {
     return is_unit_test();
 }
 
-hal_status_t hal_gpio_set_level_default(uint8_t pin, uint8_t level)
+hal_status_t hal_gpio_set_level_default(uint8_t pin, hal_gpio_level_t level)
 {
     return is_unit_test();
 }

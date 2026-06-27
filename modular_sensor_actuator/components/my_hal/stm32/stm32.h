@@ -1,24 +1,23 @@
 /******************************************************************************
- * @file: esp32.h
- * @brief: Target-specific Hardware Abstraction Configuration for ESP32.
- *
- * This header maps physical silicon layout components, pin multiplexer nodes, 
- * and declares target-specific driver extensions for the Espressif ESP32 
- * platform architectures.
- *
- * @author: Michael van Gool
- * @date: 2026-06-26
- * @license: MIT License
- * Copyright (c) 2026 Michael Van Gool  . All rights reserved.
- ******************************************************************************/
+ * File: stm32.h
+ * Description: Implementation of the Harwdware Abstraction Layer (HAL) for ESP32.
+ * Provides Interaction with the hardware specific functions not provided by OS.
+ * Author: Michael Van Gool
+ * Date: 2026-05-04
+ * License: MIT
+******************************************************************************/
 
 #ifndef __ESP32_H__
 #define __ESP32_H__
 
-#include "esp_timer.h"
-#include "esp_log.h"
-#include "driver/gpio.h"
-#include "hal.h"
+#include "../include/hal.h"
+#include "../../osal/include/osal.h"
+#include "stm32f103/stm32f103.h"
+
+#include <stdlib.h>
+
+
+void stm32_log_simple(const char* msg);
 
 /**
  * Set direction of an individual pin
@@ -28,7 +27,7 @@
  * 
  * @return hal_status_t     HAL_STATUS_OK for successful, otherwise different status return
  */
-hal_status_t esp32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction);
+hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction);
 
 /**
  * Set level of an individual pin
@@ -38,7 +37,7 @@ hal_status_t esp32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction);
  * 
  * @return hal_status_t     HAL_STATUS_OK for successful, otherwise different status return
  */
-hal_status_t esp32_gpio_set_level(uint8_t pin, uint8_t level);
+hal_status_t stm32_gpio_set_level(uint8_t pin, hal_gpio_level_t level);
 
 /**
  * Set direction of an individual pin
@@ -47,7 +46,7 @@ hal_status_t esp32_gpio_set_level(uint8_t pin, uint8_t level);
  * 
  * @return int8_t The level that the param pin is at
  */
-int8_t esp32_gpio_get_level(uint8_t pin);
+int8_t stm32_gpio_get_level(uint8_t pin);
 
 /**
  * @brief Configure the interrupt trigger condition for a GPIO pin.
@@ -63,7 +62,7 @@ int8_t esp32_gpio_get_level(uint8_t pin);
  *
  * @return HAL status code.
  */
-hal_status_t esp32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type);
+hal_status_t stm32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type);
 
 /**
  * @brief Register an interrupt service routine for a GPIO pin.
@@ -80,7 +79,7 @@ hal_status_t esp32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type);
  * @param[in] isr_handler ISR callback function to be called
  * @param[in] args arguments for the ISR callback
  */
-hal_status_t esp32_gpio_isr_handler_add(uint8_t gpio_pin, void* isr_handler, void* args);
+hal_status_t stm32_gpio_isr_handler_add(uint8_t gpio_pin, void* isr_handler, void* args);
 
 /**
  * @brief Delay execution for the specified number of microseconds.
@@ -94,14 +93,14 @@ hal_status_t esp32_gpio_isr_handler_add(uint8_t gpio_pin, void* isr_handler, voi
  *
  * @param[in] delay_us Delay duration in microseconds.
  */ 
-void esp32_rom_delay_us(uint32_t delay_us);
+void stm32_rom_delay_us(uint32_t delay_us);
 
 /**
  * Get the current time in us.
  * 
  * @return current time in us.
  */
-int64_t esp32_timer_get_time();
+int64_t stm32_timer_get_time();
 
 
 /**
@@ -116,24 +115,8 @@ int64_t esp32_timer_get_time();
  *
  * @return HAL status code.
  */
-hal_status_t esp32_gpio_install_isr_service(hal_intr_flag_t flag);
+hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag);
 
-/**
- * @brief Thread-safe formatted logging at the INFO severity level with contextual tagging.
- *
- * Formats and routes log streams through the ESP32 UART console interface. This function
- * appends structured system metadata (runtime tick counts and runtime component tags) to the 
- * output stream.
- *
- * @param[in] level  The target logging severity framework tier (e.g., ESP_LOG_INFO equivalent).
- * @param[in] tag    Null-terminated string representing the specific software component or module.
- * @param[in] fmt    Null-terminated format string containing standard printf-style specifiers.
- * @param[in] ...    Variadic arguments corresponding to the parameters defined in the fmt string.
- *
- * @note This function is designed to be completely non-blocking and thread-safe when invoked
- * across multiple concurrent RTOS tasks.
- */
-void esp32_log_info(uint8_t level, const char *tag, const char *fmt, ...);
+void stm32_log_info(hal_log_level_t level, const char *tag, const char *fmt, ...);
 
-
-#endif //__ESP32_H__
+#endif //__STM32_H__
