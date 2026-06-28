@@ -1,3 +1,4 @@
+#include "addr.h"
 #include "stm32.h"
 #include "stm32_func.h"
 
@@ -110,6 +111,26 @@ int8_t stm32_gpio_get_level(uint8_t pin)
     return (base_addr->IDR.all >> pin) & 1;
 }
 
+void stm32_log_init(void)
+{
+    APB2_REG->bits.USART1_EN = 1;
+    volatile GPIO_BLOCK* gpioa_addr = get_gpio_port_block_func(0);
+    gpioa_addr->CRH.all &= ~(0xF << 4);
+    gpioa_addr->CRH.all |= (0xB << 4);
+
+    // Assuming a 72 MHz system clock: 72,000,000 / 9600 = 7500
+    // 7500 in hex is 0x1D4C
+    USART1_REG->BRR = 0x1D4C; 
+
+    // USART_CR1: UE (USART Enable) is Bit 13, TE (Transmitter Enable) is Bit 3
+    USART1_REG->CR1.bits.UE = 1;
+    USART1_REG->CR1.bits.TE = 1;
+    
+    
+    
+
+}
+
 void stm32_clock_init(void) 
 {
     RCC_CR_REG->bits.HSION = 1;
@@ -151,6 +172,7 @@ void stm32_clock_init(void)
     DWT_BLOCK_REG->CYCCNT = 0;
     DWT_BLOCK_REG->CTRL.bits.CYCCNT_EN = 1;
 
+    stm32_log_init();
 }
 
 
@@ -192,25 +214,17 @@ hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag)
 
 void stm32_log_info(hal_log_level_t level, const char *tag, const char *fmt, ...)
 {
-
+    
 }
 
-#define USART1_BASE  ((uint32_t)0x40013800)
-
-#define USART1_SR    (*(volatile uint32_t *)(USART1_BASE + 0x00))
-#define USART1_DR    (*(volatile uint32_t *)(USART1_BASE + 0x04))
-#define USART1_BRR   (*(volatile uint32_t *)(USART1_BASE + 0x08))
-#define USART1_CR1   (*(volatile uint32_t *)(USART1_BASE + 0x0C))
 void stm32_log_simple(const char* msg)
 {
 
     // 1. Enable Clocks for GPIOA and USART1
     // RCC_APB2ENR: GPIOA is Bit 2, USART1 is Bit 14
     // RCC->APB2ENR |= (1 << 2) | (1 << 14);
-    APB2_REG->bits.USART1_EN = 1;
 
 
-    volatile GPIO_BLOCK* gpioa_addr = get_gpio_port_block_func(0);
     // 2. Configure PA9 (TX) as Alternate Function Push-Pull (Speed 50MHz)
     // GPIOA->CRH controls pins 8-15. PA9 is controlled by bits 4-7.
     // Clear bits 4, 5, 6, 7 first
@@ -218,29 +232,24 @@ void stm32_log_simple(const char* msg)
     // Set MODE9 to 11 (Output 50MHz) and CNF9 to 10 (Alt Function Push-Pull) -> 1011b (0xB)
     // GPIOA->CRH |= (0xB << 4);
 
-    gpioa_addr->CRH.all &= ~(0xF << 4);
-    gpioa_addr->CRH.all |= (0xB << 4);
 
 
     // 3. Configure Baud Rate to 9600
     // Formula: BRR = SystemClock / BaudRate
-    // Assuming a 72 MHz system clock: 72,000,000 / 9600 = 7500
-    // 7500 in hex is 0x1D4C
     // (If using default 8 MHz clock: 8,000,000 / 9600 = 833.33 -> 833 = 0x341)
-    USART1_BRR = 0x1D4C; 
 
     // 4. Enable USART and Transmitter
-    // USART_CR1: UE (USART Enable) is Bit 13, TE (Transmitter Enable) is Bit 3
-    USART1_CR1 |= (1 << 13) | (1 << 3);
+    
     
     for(int i = 0; *(msg + i) != '\0'; i++)
     {
-        while (!(USART1_SR & (1 << 7)));
-        USART1_DR = ( *(msg + i) & 0xFF);
+        while (!(USART1_REG->SR & (1 << 7)));
+        USART1_REG->DR = ( *(msg + i) & 0xFF);
+        // USART1_DR = ( *(msg + i) & 0xFF);
     }
 
-    while (!(USART1_SR & (1 << 7)));
-    USART1_DR = ( '\n' & 0xFF);
-    
+    while (!(USART1_REG->SR & (1 << 7)));
+    USART1_REG->DR = ( '\n' & 0xFF);
+
 
 }

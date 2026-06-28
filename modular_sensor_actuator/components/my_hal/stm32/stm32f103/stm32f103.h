@@ -175,9 +175,36 @@ typedef struct
     REG_TYPE FLASH_ACR;
 } FLASH_BLOCK;
 
-#define _aFLASH_BASE       0x40022000
 #define FLASH_BLOCK_REG     ((volatile FLASH_BLOCK*) 0x40022000)
 
+/******************************************************************************
+ * 
+ * USART
+ * 
+******************************************************************************/
+
+typedef union {
+    struct {
+        REG_TYPE SBK            :1; // Bit 0: Send break
+        REG_TYPE RWU            :1; // Bit 1: Receiver wakeup
+        REG_TYPE RE             :1; // Bit 2: Receiver enable
+        REG_TYPE TE             :1; // Bit 3: Transmitter enable
+        REG_TYPE _reserved2     :9; // Bit 4-12
+        REG_TYPE UE             :1; // Bit 13: USART enable
+        REG_TYPE _reserved1     :18; // Bit 14-31
+    } bits;
+    REG_TYPE all;
+} USART_CR1_t;
+
+typedef struct 
+{
+    REG_TYPE SR;
+    REG_TYPE DR;
+    REG_TYPE BRR;
+    volatile USART_CR1_t CR1;
+} USART_BLOCK;
+
+#define USART1_REG  ((volatile USART_BLOCK*)0x40013800)
 
 /******************************************************************************
  * 

@@ -239,7 +239,7 @@ extern hal_gpio_isr_handler_add hal_gpio_isr_handler_add_func;
 extern hal_rom_delay_us hal_rom_delay_us_func;
 extern hal_timer_get_time hal_timer_get_time_func;
 extern hal_gpio_install_isr_service hal_gpio_install_isr_service_func;
-extern hal_log_info hal_log;
+extern hal_log_info hal_log_func;
 
 /* Default GPIO implementation. */
 hal_status_t hal_gpio_set_direction_default(uint8_t pin, hal_gpio_config_t direction);

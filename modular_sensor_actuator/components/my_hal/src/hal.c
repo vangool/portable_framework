@@ -22,6 +22,7 @@ hal_gpio_isr_handler_add        hal_gpio_isr_handler_add_func       = hal_gpio_i
 hal_rom_delay_us                hal_rom_delay_us_func               = hal_rom_delay_us_default;
 hal_timer_get_time              hal_timer_get_time_func             = hal_timer_get_time_default;
 hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = hal_gpio_install_isr_service_default;
+hal_log_info                    hal_log_func                        = hal_log_info_default;
 
 hal_status_t is_unit_test()
 {
@@ -40,6 +41,8 @@ const char* hal_status_to_string(hal_status_t status)
         case HAL_ERROR_GENERAL:                 return "HAL_ERROR_GENERAL";
         case HAL_ERROR_INVALID_ARG:             return "HAL_ERROR_INVALID_ARG";
         case HAL_ERROR_DEFAULT_IMPLEMENTATION:  return "HAL_ERROR_DEFAULT_IMPLEMENTATION";
+        case HAL_ERROR_RESTRICTED:              return "HAL_ERROR_RESTRICTED";
+
         default:                                return "HAL_STATUS_UNKNOWN_ERROR";
     }
 }
