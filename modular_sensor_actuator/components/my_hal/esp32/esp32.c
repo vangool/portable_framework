@@ -22,7 +22,7 @@ hal_gpio_isr_handler_add        hal_gpio_isr_handler_add_func       = esp32_gpio
 hal_rom_delay_us                hal_rom_delay_us_func               = esp_rom_delay_us;
 hal_timer_get_time              hal_timer_get_time_func             = esp_timer_get_time;
 hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = esp32_gpio_install_isr_service;
-hal_log_info                    hal_log_func                        = esp32_log_info;
+hal_log                         hal_log_func                        = esp32_log;
 
 /**
  * Translate the status from ESP32 API to HAL API
@@ -147,7 +147,7 @@ hal_status_t esp32_gpio_install_isr_service(hal_intr_flag_t flag)
     return hal_translate_status(ret);
 }
 
-void esp32_log_info(uint8_t level, const char *tag, const char *fmt, ...)
+void esp32_log(uint8_t level, const char *tag, const char *fmt, ...)
 {
     if(level == 0)
         return;

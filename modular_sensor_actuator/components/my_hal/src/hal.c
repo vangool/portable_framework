@@ -15,14 +15,14 @@
 #include "../include/hal.h"
 
 hal_gpio_set_direction          hal_gpio_set_direction_func         = hal_gpio_set_direction_default;
-hal_gpio_set_level              hal_gpio_set_level_func             = hal_gpio_set_direction_default;
+hal_gpio_set_level              hal_gpio_set_level_func             = hal_gpio_set_level_default;
 hal_gpio_get_level              hal_gpio_get_level_func             = hal_gpio_get_level_default;
 hal_gpio_set_intr_type          hal_gpio_set_intr_type_func         = hal_gpio_set_intr_type_default;
 hal_gpio_isr_handler_add        hal_gpio_isr_handler_add_func       = hal_gpio_isr_handler_add_default;
 hal_rom_delay_us                hal_rom_delay_us_func               = hal_rom_delay_us_default;
 hal_timer_get_time              hal_timer_get_time_func             = hal_timer_get_time_default;
 hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = hal_gpio_install_isr_service_default;
-hal_log_info                    hal_log_func                        = hal_log_info_default;
+hal_log                         hal_log_func                        = hal_log_default;
 
 hal_status_t is_unit_test()
 {
@@ -84,7 +84,7 @@ hal_status_t hal_gpio_install_isr_service_default(hal_intr_flag_t intr_flags)
     return is_unit_test();
 }
 
-void hal_log_info_default(uint8_t level, const char* tag, const char* fmt, ...)
+void hal_log_default(uint8_t level, const char* tag, const char* fmt, ...)
 {
     va_list args;
 
@@ -96,3 +96,4 @@ void hal_log_info_default(uint8_t level, const char* tag, const char* fmt, ...)
 
     printf("\n");
 }
+

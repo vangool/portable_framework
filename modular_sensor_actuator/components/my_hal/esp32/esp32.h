@@ -133,7 +133,7 @@ hal_status_t esp32_gpio_install_isr_service(hal_intr_flag_t flag);
  * @note This function is designed to be completely non-blocking and thread-safe when invoked
  * across multiple concurrent RTOS tasks.
  */
-void esp32_log_info(uint8_t level, const char *tag, const char *fmt, ...);
+void esp32_log(uint8_t level, const char *tag, const char *fmt, ...);
 
 
 #endif //__ESP32_H__

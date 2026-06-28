@@ -46,6 +46,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "../utils/printf/printf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -228,7 +229,7 @@ typedef hal_status_t (*hal_gpio_install_isr_service)(hal_intr_flag_t intr_flags)
  * internally using the standard C `<stdarg.h>` macros (`va_list`, `va_start`, 
  * `vprintf`/`vsnprintf`, and `va_end`).
  */
-typedef void (*hal_log_info)(uint8_t level, const char* tag, const char* fmt, ...);
+typedef void (*hal_log)(uint8_t level, const char* tag, const char* fmt, ...);
 
 /* Active GPIO implementation. */
 extern hal_gpio_set_direction hal_gpio_set_direction_func;
@@ -239,7 +240,7 @@ extern hal_gpio_isr_handler_add hal_gpio_isr_handler_add_func;
 extern hal_rom_delay_us hal_rom_delay_us_func;
 extern hal_timer_get_time hal_timer_get_time_func;
 extern hal_gpio_install_isr_service hal_gpio_install_isr_service_func;
-extern hal_log_info hal_log_func;
+extern hal_log hal_log_func;
 
 /* Default GPIO implementation. */
 hal_status_t hal_gpio_set_direction_default(uint8_t pin, hal_gpio_config_t direction);
@@ -250,7 +251,7 @@ hal_status_t hal_gpio_isr_handler_add_default(uint8_t gpio_pin, void* isr_handle
 void hal_rom_delay_us_default(uint32_t delay_us);
 int64_t hal_timer_get_time_default(void);
 hal_status_t hal_gpio_install_isr_service_default(hal_intr_flag_t intr_flags);
-void hal_log_info_default(uint8_t level, const char* tag, const char* fmt, ...);
+void hal_log_default(uint8_t level, const char* tag, const char* fmt, ...);
 
 /* HAL functions */
 /**
@@ -271,6 +272,8 @@ void hal_log_info_default(uint8_t level, const char* tag, const char* fmt, ...);
  * so will trigger a catastrophic hardware memory fault.
  */
 const char* hal_status_to_string(hal_status_t status);
+
+const char* hal_log_level_to_string(hal_log_level_t level);
 
 hal_status_t is_unit_test();
 

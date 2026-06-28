@@ -1,3 +1,4 @@
+#include "../addr.h"
 #include "stm32f103.h"
 #include "../stm32_func.h"
 
@@ -51,18 +52,28 @@ uint8_t clear_port(uint8_t packed_pin)
 
 hal_status_t verify_pin(uint8_t packed_pin)
 {
+    switch (packed_pin)
+    {
+        case LOGGING_PIN:
+        case STM_PIN_PA13:
+        case STM_PIN_PA14:
+        case STM_PIN_PA15:
+        case STM_PIN_PB02: // Boot pin
+        case STM_PIN_PB03:
+        case STM_PIN_PB04:
+            return HAL_ERROR_RESTRICTED;        
+    }
+
     if(packed_pin >= STM_PIN_PA00 && packed_pin <= STM_PIN_PA12)
+    {
         return HAL_STATUS_OK;
-    if(packed_pin >= STM_PIN_PA13 && packed_pin <= STM_PIN_PA15)
-        return HAL_ERROR_RESTRICTED;
-    
-    if(packed_pin == STM_PIN_PB02)
-        return HAL_ERROR_GENERAL;
-    else if(packed_pin >= STM_PIN_PB00 && packed_pin <= STM_PIN_PB01 ||
-            packed_pin >= STM_PIN_PB05 && packed_pin <= STM_PIN_PB15)
+    }
+
+    if(packed_pin >= STM_PIN_PB00 && packed_pin <= STM_PIN_PB01 ||
+        packed_pin >= STM_PIN_PB05 && packed_pin <= STM_PIN_PB15)
+    {
         return HAL_STATUS_OK;
-    else if(packed_pin == STM_PIN_PB03 || packed_pin == STM_PIN_PB04)
-        return HAL_ERROR_RESTRICTED;
+    }
 
     if(packed_pin == STM_PIN_PC13)
         return HAL_STATUS_OK;

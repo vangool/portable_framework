@@ -17,7 +17,6 @@
 #include <stdlib.h>
 
 
-void stm32_log_simple(const char* msg);
 
 /**
  * Set direction of an individual pin
@@ -117,6 +116,7 @@ int64_t stm32_timer_get_time();
  */
 hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag);
 
-void stm32_log_info(hal_log_level_t level, const char *tag, const char *fmt, ...);
+void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...);
+
 
 #endif //__STM32_H__

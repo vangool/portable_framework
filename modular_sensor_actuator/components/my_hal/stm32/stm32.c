@@ -10,7 +10,7 @@ hal_gpio_isr_handler_add        hal_gpio_isr_handler_add_func       = stm32_gpio
 hal_rom_delay_us                hal_rom_delay_us_func               = stm32_rom_delay_us;
 hal_timer_get_time              hal_timer_get_time_func             = stm32_timer_get_time;
 hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = stm32_gpio_install_isr_service;
-hal_log_info                    hal_log                             = stm32_log_info;
+hal_log                         hal_log_func                        = stm32_log;
 
 volatile uint32_t system_ms = 0;
 
@@ -118,16 +118,13 @@ void stm32_log_init(void)
     gpioa_addr->CRH.all &= ~(0xF << 4);
     gpioa_addr->CRH.all |= (0xB << 4);
 
-    // Assuming a 72 MHz system clock: 72,000,000 / 9600 = 7500
+    // 72 MHz system clock: 72,000,000 / 9600 = 7500
     // 7500 in hex is 0x1D4C
     USART1_REG->BRR = 0x1D4C; 
 
     // USART_CR1: UE (USART Enable) is Bit 13, TE (Transmitter Enable) is Bit 3
     USART1_REG->CR1.bits.UE = 1;
     USART1_REG->CR1.bits.TE = 1;
-    
-    
-    
 
 }
 
@@ -212,44 +209,46 @@ hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag)
     return HAL_ERROR_DEFAULT_IMPLEMENTATION;
 }
 
-void stm32_log_info(hal_log_level_t level, const char *tag, const char *fmt, ...)
+void _putchar(char character)
 {
-    
+    while (!(USART1_REG->SR & (1 << 7)));
+    USART1_REG->DR = ( character & 0xFF);
 }
-
-void stm32_log_simple(const char* msg)
+void stm32_print_str(const char* str, const uint8_t len)
 {
-
-    // 1. Enable Clocks for GPIOA and USART1
-    // RCC_APB2ENR: GPIOA is Bit 2, USART1 is Bit 14
-    // RCC->APB2ENR |= (1 << 2) | (1 << 14);
-
-
-    // 2. Configure PA9 (TX) as Alternate Function Push-Pull (Speed 50MHz)
-    // GPIOA->CRH controls pins 8-15. PA9 is controlled by bits 4-7.
-    // Clear bits 4, 5, 6, 7 first
-    // GPIOA->CRH &= ~(0xF << 4);
-    // Set MODE9 to 11 (Output 50MHz) and CNF9 to 10 (Alt Function Push-Pull) -> 1011b (0xB)
-    // GPIOA->CRH |= (0xB << 4);
-
-
-
-    // 3. Configure Baud Rate to 9600
-    // Formula: BRR = SystemClock / BaudRate
-    // (If using default 8 MHz clock: 8,000,000 / 9600 = 833.33 -> 833 = 0x341)
-
-    // 4. Enable USART and Transmitter
-    
-    
-    for(int i = 0; *(msg + i) != '\0'; i++)
+    for(int i = 0; *(str + i) != '\0' && i < len; i++)
     {
         while (!(USART1_REG->SR & (1 << 7)));
-        USART1_REG->DR = ( *(msg + i) & 0xFF);
-        // USART1_DR = ( *(msg + i) & 0xFF);
+        USART1_REG->DR = ( *(str + i) & 0xFF);
     }
 
-    while (!(USART1_REG->SR & (1 << 7)));
-    USART1_REG->DR = ( '\n' & 0xFF);
+    while (!(USART1_REG->SR & (1 << 6)));
+}
 
+void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...)
+{
+    const char* level_str = hal_log_level_to_string(level);
+    char msg_buffer[(MAX_LOG_LENGTH >> 1)];
+    
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf_(msg_buffer, (MAX_LOG_LENGTH >> 1), fmt, args);
+    va_end(args);
 
+    msg_buffer[(MAX_LOG_LENGTH >> 1) - 1] = '\0';
+
+    char log_buffer[MAX_LOG_LENGTH];
+    
+    int actual_len = snprintf_(log_buffer, MAX_LOG_LENGTH, "%s: [%s] %s", level_str, tag, msg_buffer);
+
+    if (actual_len >= MAX_LOG_LENGTH) {
+        actual_len = MAX_LOG_LENGTH - 1;
+    }
+    log_buffer[actual_len] = '\0';
+
+    stm32_print_str(log_buffer, actual_len);
+
+    _putchar('\r');
+    _putchar('\n');
+    while (!(USART1_REG->SR & (1 << 6)));
 }

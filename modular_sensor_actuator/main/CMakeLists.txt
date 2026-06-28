@@ -11,15 +11,16 @@ if($ENV{PLATFORM_ESP32})
 	)
 
 	target_compile_definitions(${COMPONENT_LIB} PRIVATE
-    	HAL_GPIO_IRAM_ATTR=IRAM_ATTR
+		HAL_GPIO_IRAM_ATTR=IRAM_ATTR
+		PRINTF_INCLUDE_CONFIG_H
 	)
 
 	target_compile_options(${COMPONENT_LIB} PRIVATE
-	-Wall
-	-Wextra
-	-Werror
-	"-Werror=unused-function"
-)
+		-Wall
+		-Wextra
+		-Werror
+		"-Werror=unused-function"
+	)
 elseif($ENV{PLATFORM_STM32})
 
 	add_executable(firmware.elf
@@ -32,6 +33,10 @@ elseif($ENV{PLATFORM_STM32})
 	target_link_libraries(firmware.elf PRIVATE
     	my_hal
     	#OSALCode
+	)
+
+	target_compile_definitions(my_hal PRIVATE
+		PRINTF_INCLUDE_CONFIG_H
 	)
 
 	target_compile_options(firmware.elf PRIVATE -mcpu=cortex-m3 -mthumb -O0 -g -ffreestanding -nostartfiles)

@@ -1,0 +1,3 @@
+[submodule "modular_sensor_actuator/components/my_hal/utils/printf"]
+	path = modular_sensor_actuator/components/my_hal/utils/printf
+	url = git@github.com:vangool/printf.git

@@ -105,6 +105,32 @@ typedef union
 } APB1_r;
 #define APB1_REG                    ((volatile APB1_r*) 0x4002101C)
 
+typedef union
+{
+    struct
+    {
+        REG_TYPE LSION      : 1; // Bit 0: LSI Enable (Low Speed Internal)
+        REG_TYPE LSIRDY     : 1; // Bit 1: LSI Ready
+        REG_TYPE _reserved1 : 6; // Bit 2-7
+        REG_TYPE LSICAL     : 8; // Bits 8-15 LSI Calibration Value
+
+        REG_TYPE _reserved2 : 8; // Bit 16-23
+
+        REG_TYPE RMVF       : 1; // Bit 24: Remove Reset Flags
+        REG_TYPE _reserved3 : 1; // Bit 25
+        
+        REG_TYPE PINRSTF    : 1; // Bit 26: Reset pin triggered reset
+        REG_TYPE PORRSTF    : 1; // Bit 27: Power-on Reset
+        REG_TYPE SFTRSTF    : 1; // Bit 28: Software Reset
+        REG_TYPE IWDGRSTF   : 1; // Bit 29: Independent Watchdog Reset
+        REG_TYPE WWDGRSTF   : 1; // Bit 30: Window Watchdog Reset
+        REG_TYPE LPWRRSTF   : 1; // Bit 31: Low power reset
+    } bits;
+
+    REG_TYPE all;
+} RCC_CSR_r;
+#define RCC_CSR_REG         ((volatile RCC_CFGR_r*) 0x40021024);
+
 #define TIM2_CR1_BASE           0x40000000
 #define TIM2_CEN                (1 << 0)    // Counter Enable
 #define TIM2_SR_OFFSET          0x0C
