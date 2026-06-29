@@ -44,18 +44,18 @@ void SysTick_Handler(void)
 
 hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
 {
-    hal_status_t ret = verify_pin(pin);
+    hal_status_t ret = stm32fn_verify_pin_func(pin);
     if(ret != HAL_STATUS_OK)
         return ret;
 
     uint8_t port = (pin >> 6) & 3;
-    volatile GPIO_BLOCK* base_addr = get_gpio_port_block_func(port);
+    volatile GPIO_BLOCK* base_addr = stm32fn_get_gpio_port_block_func(port);
     if(base_addr == 0)
     {
         return HAL_ERROR_INVALID_ARG;
     }
 
-    uint8_t gpio_config = translate_gpio_mode_func(direction);
+    uint8_t gpio_config = stm32fn_translate_gpio_mode_func(direction);
     pin &= 0xF;
 
     if(pin >= 8)
@@ -77,12 +77,12 @@ hal_status_t stm32_gpio_set_level(uint8_t pin, hal_gpio_level_t level)
     if (level > HAL_GPIO_HIGH)
         return HAL_ERROR_INVALID_ARG;
 
-    hal_status_t ret = verify_pin(pin);
+    hal_status_t ret = stm32fn_verify_pin_func(pin);
     if(ret != HAL_STATUS_OK)
         return ret;
 
     uint8_t port = (pin >> 6) & 3;
-    volatile GPIO_BLOCK* base_addr = get_gpio_port_block_func(port);
+    volatile GPIO_BLOCK* base_addr = stm32fn_get_gpio_port_block_func(port);
     if(base_addr == 0)
         return HAL_ERROR_INVALID_ARG;
 
@@ -96,12 +96,12 @@ hal_status_t stm32_gpio_set_level(uint8_t pin, hal_gpio_level_t level)
 
 int8_t stm32_gpio_get_level(uint8_t pin)
 {
-    hal_status_t ret = verify_pin(pin);
+    hal_status_t ret = stm32fn_verify_pin_func(pin);
     if(ret != HAL_STATUS_OK)
         return -1;
 
     uint8_t port = (pin >> 6) & 3;
-    volatile GPIO_BLOCK* base_addr = get_gpio_port_block_func(port);
+    volatile GPIO_BLOCK* base_addr = stm32fn_get_gpio_port_block_func(port);
 
     if(base_addr == 0)
         return -1;
@@ -111,10 +111,11 @@ int8_t stm32_gpio_get_level(uint8_t pin)
     return (base_addr->IDR.all >> pin) & 1;
 }
 
-void stm32_log_init(void)
+void stm32_log_uart_init(void)
 {
     APB2_REG->bits.USART1_EN = 1;
-    volatile GPIO_BLOCK* gpioa_addr = get_gpio_port_block_func(0);
+
+    volatile GPIO_BLOCK* gpioa_addr = stm32fn_get_gpio_port_block_func(0);
     gpioa_addr->CRH.all &= ~(0xF << 4);
     gpioa_addr->CRH.all |= (0xB << 4);
 
@@ -161,7 +162,7 @@ void stm32_clock_init(void)
     APB2_REG->bits.IOPB_EN = 1;
     APB2_REG->bits.IOPC_EN = 1;
 
-    STK_REG->STK_LOAD = (CLK_SPEED / 1000) - 1;
+    STK_REG->STK_LOAD = (APB2_CLK_SPEED / 1000) - 1;
     STK_REG->STK_VAL = 0;
     STK_REG->STK_CTRL = (1 << 2) | (1 << 1) | (1 << 0);
 
@@ -169,14 +170,12 @@ void stm32_clock_init(void)
     DWT_BLOCK_REG->CYCCNT = 0;
     DWT_BLOCK_REG->CTRL.bits.CYCCNT_EN = 1;
 
-    stm32_log_init();
+    stm32_log_uart_init();
 }
 
 
 hal_status_t stm32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type)
 {
-    // clock_init();
-    stm32_clock_init();
     return HAL_ERROR_DEFAULT_IMPLEMENTATION;
 }
 
@@ -190,7 +189,7 @@ void stm32_rom_delay_us(uint32_t delay_us)
     if (delay_us == 0) return;
 
     uint32_t start = DWT_BLOCK_REG->CYCCNT;
-    uint32_t cycles = CLK_SPEED / 1000000;
+    uint32_t cycles = APB2_CLK_SPEED / 1000000;
 
     while((DWT_BLOCK_REG->CYCCNT - start) < cycles);
 }
@@ -211,18 +210,19 @@ hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag)
 
 void _putchar(char character)
 {
-    while (!(USART1_REG->SR & (1 << 7)));
+    while (!(USART1_REG->SR.bits.TXE));
     USART1_REG->DR = ( character & 0xFF);
 }
+
 void stm32_print_str(const char* str, const uint8_t len)
 {
     for(int i = 0; *(str + i) != '\0' && i < len; i++)
     {
-        while (!(USART1_REG->SR & (1 << 7)));
+        while (!(USART1_REG->SR.bits.TXE));
         USART1_REG->DR = ( *(str + i) & 0xFF);
     }
 
-    while (!(USART1_REG->SR & (1 << 6)));
+    while (!(USART1_REG->SR.bits.TC));
 }
 
 void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...)
@@ -250,5 +250,26 @@ void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...)
 
     _putchar('\r');
     _putchar('\n');
-    while (!(USART1_REG->SR & (1 << 6)));
+    while (!(USART1_REG->SR.bits.TC));
+}
+
+
+void system_init()
+{
+    stm32_clock_init();
+
+    if(stm32fn_verify_pin_func(LOGGING_PIN) != HAL_STATUS_OK)
+    {
+        return;
+    }
+
+    if(LOGGING_PIN == DEBUG_PIN)
+    {
+        // stm32_log_debug_init();
+        // No current hardware can support this implementation
+    }
+    else
+    {
+        stm32_log_uart_init();
+    }
 }

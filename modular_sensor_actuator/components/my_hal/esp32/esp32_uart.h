@@ -57,7 +57,7 @@ hal_status_t esp32_uart_init(hal_uart_config_t* config, uint8_t transmit_pin, ui
  * @note If implemented as a blocking call, ensure it is executed within a dedicated FreeRTOS 
  * task to prevent starving the ESP32 watchdog timers.
  */
-void esp32_uart_receive();
+void esp32_uart_receive(hal_uart_port_t port);
 
 /**
  * @brief Transmits data over the configured ESP32 UART peripheral.
@@ -69,6 +69,6 @@ void esp32_uart_receive();
  * @note Ensure that esp32_uart_init() has been successfully called before invoking this function, 
  * otherwise the transmission will fail or invoke undefined behavior.
  */
-void esp32_uart_transmit(const char* msg);
+void esp32_uart_transmit(const char* msg, hal_uart_port_t port);
 
 #endif //__ESP32_UART_H__

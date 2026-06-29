@@ -14,7 +14,8 @@
  * Reset and clock Controls
  * 
 ******************************************************************************/
-#define CLK_SPEED               72000000     // 72 000 000 MHz
+#define APB2_CLK_SPEED      72000000    // 72 000 000 MHz
+#define APB1_CLK_SPEED      36000000    // 36 000 000 MHz      
 
 typedef union
 {
@@ -39,7 +40,7 @@ typedef union
 
     REG_TYPE all;
 } RCC_CR_r;
-#define RCC_CR_REG              ((volatile RCC_CR_r*) 0x40021000)  // Reset and clock control register
+#define RCC_CR_REG              ((volatile RCC_CR_r*) 0x40021000UL)  // Reset and clock control register
 
 typedef union {
     struct {
@@ -60,7 +61,7 @@ typedef union {
 
     REG_TYPE all; 
 } RCC_CFGR_r;
-#define RCC_CFGR_REG            ((volatile RCC_CFGR_r *) 0x40021004) // Clock Configuration Register
+#define RCC_CFGR_REG            ((volatile RCC_CFGR_r *) 0x40021004UL) // Clock Configuration Register
 
 typedef union
 {
@@ -83,53 +84,56 @@ typedef union
     
 } APB2_r;
 
-#define APB2_REG                ((volatile APB2_r*) 0x40021018) // Advanced Peripheral Bus Enable Register
+#define APB2_REG                ((volatile APB2_r*) 0x40021018UL) // Advanced Peripheral Bus Enable Register
 
 typedef union
 {
     struct
     {
-        REG_TYPE TIM2_EN            : 1; // Bit 0: Timer 2 Enable
-        REG_TYPE TIM3_EN            : 1; // Bit 1: Timer 3 Enable
-        REG_TYPE TIM4_EN            : 1; // Bit 2: Timer 4 Enable
+        REG_TYPE TIM2_EN            : 1; // Bit 0: [TIM2EN] Timer 2 Enable
+        REG_TYPE TIM3_EN            : 1; // Bit 1: [TIM3EN] Timer 3 Enable
+        REG_TYPE TIM4_EN            : 1; // Bit 2: [TIM4EN] Timer 4 Enable
         REG_TYPE _reserved1         : 11; // Bit 3-13
-        REG_TYPE USART2_EN          : 1; // Bit 14: Enable USART 2
-        REG_TYPE _reserved2         : 6; // Bit 15-20
-        REG_TYPE I2C_C1_EN          : 1; // Bit 21: Enable I2C Clock 1
-        REG_TYPE _reserved3         : 1; // Bit 22
-        REG_TYPE USB_EN             : 1; // Bit 23: USB Enable
-        REG_TYPE _reserved4         : 8; // Bit 24-31;
+        REG_TYPE SPI2_EN            : 1; // Bit 14: [SPI2EN] Enable USART 2
+        REG_TYPE _reserved2         : 2; // Bit 15-16
+        REG_TYPE USART2_EN          : 1; // Bit 17: [USART2EN] USART 2 Enable
+        REG_TYPE USART3_EN          : 1; // Bit 18: [USART3EN] USART 3 Enable
+        REG_TYPE _reserved3         : 2; // Bit 19-20
+        REG_TYPE I2C_C1_EN          : 1; // Bit 21: [I2C1EN] Enable I2C Clock 1
+        REG_TYPE _reserved4         : 1; // Bit 22
+        REG_TYPE USB_EN             : 1; // Bit 23: [USBEN] USB Enable
+        REG_TYPE _reserved5         : 8; // Bit 24-31;
     } bits;
 
     REG_TYPE all;
 } APB1_r;
-#define APB1_REG                    ((volatile APB1_r*) 0x4002101C)
+#define APB1_REG                    ((volatile APB1_r*) 0x4002101CUL)
 
 typedef union
 {
     struct
     {
-        REG_TYPE LSION      : 1; // Bit 0: LSI Enable (Low Speed Internal)
-        REG_TYPE LSIRDY     : 1; // Bit 1: LSI Ready
-        REG_TYPE _reserved1 : 6; // Bit 2-7
-        REG_TYPE LSICAL     : 8; // Bits 8-15 LSI Calibration Value
+        REG_TYPE LSI_EN         : 1; // Bit 0: [LSION] LSI Enable (Low Speed Internal)
+        REG_TYPE LSI_RDY        : 1; // Bit 1: [LSIRDY]LSI Ready
+        REG_TYPE _reserved1     : 6; // Bit 2-7
+        REG_TYPE LSI_CAL        : 8; // Bits 8-15 [LSICAL] LSI Calibration Value
 
-        REG_TYPE _reserved2 : 8; // Bit 16-23
+        REG_TYPE _reserved2     : 8; // Bit 16-23
 
-        REG_TYPE RMVF       : 1; // Bit 24: Remove Reset Flags
-        REG_TYPE _reserved3 : 1; // Bit 25
+        REG_TYPE RMVF           : 1; // Bit 24: Remove Reset Flags
+        REG_TYPE _reserved3     : 1; // Bit 25
         
-        REG_TYPE PINRSTF    : 1; // Bit 26: Reset pin triggered reset
-        REG_TYPE PORRSTF    : 1; // Bit 27: Power-on Reset
-        REG_TYPE SFTRSTF    : 1; // Bit 28: Software Reset
-        REG_TYPE IWDGRSTF   : 1; // Bit 29: Independent Watchdog Reset
-        REG_TYPE WWDGRSTF   : 1; // Bit 30: Window Watchdog Reset
-        REG_TYPE LPWRRSTF   : 1; // Bit 31: Low power reset
+        REG_TYPE PIN_RST_F      : 1; // Bit 26: [PINRSTF] Reset pin triggered reset flag
+        REG_TYPE POR_RST_F      : 1; // Bit 27: [PORRSTF] Power-on Reset flag
+        REG_TYPE SFT_RST_F      : 1; // Bit 28: [SFTRSTF] Software Reset flag
+        REG_TYPE I_WDG_RST_F    : 1; // Bit 29: [IWDGRSTF] Independent Watchdog Reset flag
+        REG_TYPE W_WDG_RST_F    : 1; // Bit 30: [WWDGRSTF] Window Watchdog Reset flag
+        REG_TYPE LPWR_RST_F     : 1; // Bit 31: [LPWRRSTF] Low power reset flag
     } bits;
 
     REG_TYPE all;
 } RCC_CSR_r;
-#define RCC_CSR_REG         ((volatile RCC_CFGR_r*) 0x40021024);
+#define RCC_CSR_REG         ((volatile RCC_CFGR_r*) 0x40021024UL);
 
 #define TIM2_CR1_BASE           0x40000000
 #define TIM2_CEN                (1 << 0)    // Counter Enable
@@ -153,7 +157,7 @@ typedef union
 
     REG_TYPE all;
 } DEMCR_r;
-#define DEMCR_REG                   ((volatile DEMCR_r*) 0xE000EDFC)  // Debug Exception and Monitor Control Register
+#define DEMCR_REG                   ((volatile DEMCR_r*) 0xE000EDFCUL)  // Debug Exception and Monitor Control Register
 
 
 
@@ -172,7 +176,7 @@ typedef struct
     volatile DWT_CTRL_r CTRL;
     volatile REG_TYPE CYCCNT;
 } DWT_BLOCK;
-#define DWT_BLOCK_REG               ((volatile DWT_BLOCK*) 0xE0001000)  // Data Watchpoint and Trace
+#define DWT_BLOCK_REG               ((volatile DWT_BLOCK*) 0xE0001000UL)  // Data Watchpoint and Trace
 
 
 
@@ -189,7 +193,7 @@ typedef struct
     REG_TYPE STK_VAL;         // (*(volatile uint32_t *)(STK_BASE + 0x08)); // SysTick Current Value Register
 } SYSTK_BLOCK;
 
-#define STK_REG             ((volatile SYSTK_BLOCK*)  0xE000E010)
+#define STK_REG             ((volatile SYSTK_BLOCK*)  0xE000E010UL)
 
 /******************************************************************************
  * 
@@ -201,16 +205,37 @@ typedef struct
     REG_TYPE FLASH_ACR;
 } FLASH_BLOCK;
 
-#define FLASH_BLOCK_REG     ((volatile FLASH_BLOCK*) 0x40022000)
+#define FLASH_BLOCK_REG     ((volatile FLASH_BLOCK*) 0x40022000UL)
 
 /******************************************************************************
  * 
  * USART
  * 
 ******************************************************************************/
+typedef union 
+{
+    struct
+    {
+        REG_TYPE PE             : 1; // Bit 0: Parity Error
+        REG_TYPE FE             : 1; // Bit 1: Frame Error
+        REG_TYPE NE             : 1; // Bit 2: Noise Error
+        REG_TYPE ORE            : 1; // Bit 3: Overrun Error
+        REG_TYPE IDLE           : 1; // Bit 4: Idle Line
+        REG_TYPE RXNE           : 1; // Bit 5: Receiver Not Empty
+        REG_TYPE TC             : 1; // Bit 6: Transmission Complete
+        REG_TYPE TXE            : 1; // Bit 7: Transmitter Empty
+        REG_TYPE LBD            : 1; // Bit 8: LIN Break
+        REG_TYPE CTS            : 1; // Bit 9: Clear to send
+        REG_TYPE _reserved1     : 22; //Bit 10-31 
+    } bits;
 
-typedef union {
-    struct {
+    REG_TYPE all;
+} USART_SR_t;
+
+typedef union 
+{
+    struct 
+    {
         REG_TYPE SBK            :1; // Bit 0: Send break
         REG_TYPE RWU            :1; // Bit 1: Receiver wakeup
         REG_TYPE RE             :1; // Bit 2: Receiver enable
@@ -224,20 +249,25 @@ typedef union {
 
 typedef struct 
 {
-    REG_TYPE SR;
+    volatile USART_SR_t SR;
     REG_TYPE DR;
     REG_TYPE BRR;
     volatile USART_CR1_t CR1;
+    volatile uint32_t CR2;
+    volatile uint32_t CR3;
+    volatile uint32_t GTPR;
 } USART_BLOCK;
 
-#define USART1_REG  ((volatile USART_BLOCK*)0x40013800)
+#define USART1_REG  ((volatile USART_BLOCK*)0x40013800UL)
+#define USART2_REG  ((volatile USART_BLOCK*)0x40004400UL)
+#define USART3_REG  ((volatile USART_BLOCK*)0x40004800UL)
 
 /******************************************************************************
  * 
  * PORT A GPIO PINS
  * 
 ******************************************************************************/
-#define A_GPIO_BASE             0x40010800
+#define A_GPIO_BASE             0x40010800UL
 
 
 /**
@@ -267,7 +297,7 @@ typedef struct
  * PA2
  * PWM
  * Analog           (ADC2)
- * USART            (TX2)
+ * USART2           (TX2)
  * Timer & Channel  (T2C3)
  * 3.3V
  */
@@ -277,7 +307,7 @@ typedef struct
  * PA3
  * PWM
  * Analog           (ADC3)
- * USART            (RX2)
+ * USART2           (RX2)
  * Timer & Channel  (T2C4)
  * 3.3V
  */
@@ -335,7 +365,7 @@ typedef struct
 /**
  * PA9
  * PWM
- * USART            (TX1)
+ * USART1           (TX1)
  * Timer & Channel  (T1C2)
  * 5V
  */
@@ -343,7 +373,7 @@ typedef struct
 
 /**
  * PA10
- * USART            (RX1)
+ * USART1           (RX1)
  * Timer & Channel  (T1C3)
  * PWM
  * 5V
@@ -403,7 +433,7 @@ typedef struct
  * PORT B GPIO PINS
  * 
 ******************************************************************************/
-#define B_GPIO_BASE 0x40010C00
+#define B_GPIO_BASE 0x40010C00UL
 /**
  * Pin Capabilities
  * 
@@ -442,6 +472,7 @@ typedef struct
  * 5V
  */
 #define STM_PIN_PB03 67
+#define DEBUG_PIN STM_PIN_PB03
 
 /**
  * PB4
@@ -451,6 +482,7 @@ typedef struct
  * 5V
  */
 #define STM_PIN_PB04 68
+#define DEBUG_RST STM_PIN_PB04
 
 /**
  * PB5
@@ -503,7 +535,7 @@ typedef struct
 /**
  * PB10
  * I2C              (SCL2)
- * USART            (TX3)
+ * USART3           (TX3)
  * Timer & Channel  (T2C3N)
  * 5V
  */
@@ -512,7 +544,7 @@ typedef struct
 /**
  * PB11
  * I2C              (SDA2)
- * USART            (RX3)
+ * USART3           (RX3)
  * Timer & Channel  (T2C4N)
  * 5V
  */
@@ -556,7 +588,7 @@ typedef struct
  * PORT C GPIO PINS
  * 
 ******************************************************************************/
-#define C_GPIO_BASE             0x40011000
+#define C_GPIO_BASE             0x40011000UL
 
 
 /**
@@ -674,7 +706,7 @@ typedef union
         REG_TYPE ODR3               : 1;  // Bit 3: Pin 3 Output Drive State
         REG_TYPE ODR4               : 1;  // Bit 4: Pin 4 Output Drive State
         REG_TYPE ODR5               : 1;  // Bit 5: Pin 5 Output Drive State
-        REG_TYPE ODR6               : 1;  // Bit 6: Pin 6 Output Drive State
+        REG_TYPE ODR6               : 1;  // Bit 6:
         REG_TYPE ODR7               : 1;  // Bit 7: Pin 7 Output Drive State
         REG_TYPE ODR8               : 1;  // Bit 8: Pin 8 Output Drive State
         REG_TYPE ODR9               : 1;  // Bit 9: Pin 9 Output Drive State
@@ -684,7 +716,7 @@ typedef union
         REG_TYPE ODR13              : 1;  // Bit 13: Pin 13 Output Drive State
         REG_TYPE ODR14              : 1;  // Bit 14: Pin 14 Output Drive State
         REG_TYPE ODR15              : 1;  // Bit 15: Pin 15 Output Drive State
-        REG_TYPE _reserved          : 16; // Bit 16-31: Reserved
+        REG_TYPE _reserved1         : 16; // Bit 16-31: Reserved
     } bits;
 
     REG_TYPE all;
@@ -756,5 +788,8 @@ typedef struct
 
 uint8_t stm32f103_translate_gpio_mode(hal_gpio_config_t hal_pin_cfg);
 volatile GPIO_BLOCK* stm32f103_get_port_block(uint8_t port);
+hal_status_t stm32f103_verify_pin(uint8_t pin);
+hal_status_t stm32f103_is_TX_pin(uint8_t pin);
+hal_status_t stm32f103_is_RX_pin(uint8_t pin); 
 
 #endif //__STM32F103C8T6

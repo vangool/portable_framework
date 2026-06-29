@@ -13,19 +13,18 @@
  * Copyright (c) 2026 Michael Van Gool. All rights reserved.
  ******************************************************************************/
 #include "hal_uart.h"
-#include "../../../main/utils.h"
 
 hal_status_t hal_uart_init_default(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin)
 {
     return is_unit_test();
 }
 
-void hal_uart_receive_default()
+void hal_uart_receive_default(hal_uart_port_t port)
 {
     return is_unit_test();
 }
 
-void hal_uart_transmit_default(const char* msg)
+void hal_uart_transmit_default(const char* msg, hal_uart_port_t port)
 {
     return is_unit_test();
 }

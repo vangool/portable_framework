@@ -64,6 +64,7 @@ zero_bss_loop:
 
 launch_main:
     /* 4. Branch to your main function */
+    bl system_init
     bl main
 
 _hang:

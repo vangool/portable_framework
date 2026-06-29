@@ -54,35 +54,39 @@ graph TD
 This project was built using an organic, test-driven refactoring pipeline—moving step-by-step from raw hardware execution to a fully decoupled, production-ready architecture:
 
 ### 🟢 Done
-- [x] **Phase 1: Framework Prototyping** – Established baseline sensor execution by driving the US100 Ultrasonic Sensor using the native ESP-IDF HAL.
+- [x] **Phase 1: Framework Prototyping** – Establish baseline sensor execution by driving the US100 Ultrasonic Sensor using the native ESP-IDF HAL.
 - [ ] **Phase 2: Event-Driven Optimization** – 
-    - [x] **2.1 Migration to ISR:** Migrated from blocking task-polling routines to an asynchronous, edge-triggered GPIO Interrupt Service Routine (ISR) via the ESP-IDF interrupt matrix for microsecond-accurate pulse timing.
+    - [x] **2.1 Migration to ISR:** Migrate from blocking task-polling routines to an asynchronous, edge-triggered GPIO Interrupt Service Routine (ISR) via the ESP-IDF interrupt matrix for microsecond-accurate pulse timing.
+    - [x] **2.2 Asynchronous Data Pipeline:** Implemente an internal FreeRTOS queue mechanism to decouple data collection from processing. The primary execution thread enqueues raw sensor readings, enabling background tasks to dequeue and handle telemetry asynchronously.
 
-- [x] **Phase 3: Hardware Abstraction Layer (HAL)** – Cleanly isolated the physical silicon dependencies into a dedicated abstraction layer (`hal.h`) to decouple hardware control from application logic.
+- [x] **Phase 3: Hardware Abstraction Layer (HAL)** – Cleanly isolate the physical silicon dependencies into a dedicated abstraction layer (`hal.h`) to decouple hardware control from application logic.
 
-- [x] **Phase 9.1 Core Logic Isolation:** Configure the CMake build system to compile pure-C modules within a C++ test harness via `extern "C"`.
-- [x] **Phase 9.2 HAL Peripheral Interface Mocking:** Architected an `extern "C"` virtual proxy harness around `hal.h` boundaries, enabling **GoogleMock** to intercept low-level driver execution entirely off-silicon.
+- [x] **Phase 8.1 Core Logic Isolation:** Configure the CMake build system to compile pure-C modules within a C++ test harness via `extern "C"`.
+- [x] **Phase 8.2 HAL Peripheral Interface Mocking:** Architect an `extern "C"` virtual proxy harness around `hal.h` boundaries, enabling **GoogleMock** to intercept low-level driver execution entirely off-silicon.
 
-- [x] **Phase 4: Operating System Abstraction Layer (OSAL)** – Wrapped FreeRTOS kernel primitives into a non-blocking execution layer (`osal.h`) to handle thread-safe scheduling, timing, and queues.
+- [x] **Phase 4: Operating System Abstraction Layer (OSAL)** – Wrap FreeRTOS kernel primitives into a non-blocking execution layer (`osal.h`) to handle thread-safe scheduling, timing, and queues.
 
-- [x] **Phase 5: Serial Communication Core** – Implemented low-level UART transmission protocols and integrated memory-bounded logging channels for target diagnostics.
+- [x] **Phase 5: Serial Communication Core** – Implement low-level UART transmission protocols and integrated memory-bounded logging channels for target diagnostics.
 
-- [x] **Phase 6: Polymorphic Driver Binding** – Refactored the core UART drivers into the modular HAL configuration matrix (`hal_uart`).
+- [x] **Phase 6: Polymorphic Driver Binding** – Refactor the core UART drivers into the modular HAL configuration matrix (`hal_uart`).
+
+- [x] **Phase 7.1 STMF103 Clock and GPIO:** Port the abstract HAL interfaces down to direct Memory-Mapped I/O register layouts (GPIO & USART clock gating, status polling) on the STM32F103 platform.
+- [x] **Phase 7.2 STM32 UART Peripheral Engine:** Port abstract serial interfaces down to direct Memory-Mapped I/O register layouts, configuring clock gating (APB2ENR & APB1ENR), baud rate generation (BRR), control pipelines (CR1), and status-driven transmission polling (SR / TXE).
 
 ### 🟡 In Progress
-- [ ] **Phase 2.2: ISR Defense** ISR Defensive Bounds & Race-Condition Mitigation
+- [ ] **Phase 2.3: ISR Defense** ISR Defensive Bounds & Race-Condition Mitigation
 
-- [ ] **Phase 7: Bare-Metal STM32F103 Register Integration** – Porting the abstract HAL/OSAL interfaces down to direct Memory-Mapped I/O register layouts (GPIO & USART clock gating, status polling) on the STM32F103 platform.
+- [ ] **Phase 7: Bare-Metal STM32F103 Register Integration**
+    - [ ] **7.3 STM32 Scheduling and Threads:** Engineer a custom, preemptive Round-Robin scheduler driven by the ARM SysTick heartbeat, utilizing assembly context switching (PendSV) and custom Task Control Blocks (TCBs) to run multiple independent threads.
+    - [ ] **7.4: STM32 Asynchronous EXTI Interrupt Engine** – Implementing raw hardware external interrupt configuration (EXTI) and basic timer captures on the STM32 to match the asynchronous performance of the ESP32 build.
 
-- [ ] **Phase 8: STM32 Asynchronous EXTI Interrupt Engine** – Implementing raw hardware external interrupt configuration (EXTI) and basic timer captures on the STM32 to match the asynchronous performance of the ESP32 build.
+- [ ] **Phase 8: Host-Side C++ Simulation & Testing Engine (GoogleTest / GoogleMock)**
+  - [ ] **8.3 OSAL Queue & Task Mocking:** Implement strict mocks for `osal.h` primitives to simulate task synchronization and thread-safe data pipelines on the host PC.
+  - [ ] **8.4 Asynchronous ISR Injection:** Write a gtest test fixture that simulates hardware events by manually invoking the US100 interrupt service handler, verifying that the timestamp data routes correctly through the mocked OSAL layer.
+  - [ ] **8.5 Defensive Edge-Case Verification:** Validate the driver's state machine against simulated hardware faults, including timeout constraints, corrupted UART frames, and invalid ultrasonic echo pulse widths.
 
-- [ ] **Phase 9: Host-Side C++ Simulation & Testing Engine (GoogleTest / GoogleMock)**
-  - [ ] **9.3 OSAL Queue & Task Mocking:** Implement strict mocks for `osal.h` primitives to simulate task synchronization and thread-safe data pipelines on the host PC.
-  - [ ] **9.4 Asynchronous ISR Injection:** Write a gtest test fixture that simulates hardware events by manually invoking the US100 interrupt service handler, verifying that the timestamp data routes correctly through the mocked OSAL layer.
-  - [ ] **9.5 Defensive Edge-Case Verification:** Validate the driver's state machine against simulated hardware faults, including timeout constraints, corrupted UART frames, and invalid ultrasonic echo pulse widths.
-
-- [ ] **Phase 10: Technical Documentation & Systems Modeling** – Authoring a comprehensive architectural design document containing unified sequence diagrams and finite state machine (FSM) flowcharts mapping asynchronous ISR-to-Task handoffs.
-- [ ] **Phase 11: CI/CD Automated Verification Pipeline** – Integrating a GitHub Actions workflow to automatically run cross-compiler verification (both `idf.py` and the STM32 toolchain) on every repository commit.
+- [ ] **Phase 9: Technical Documentation & Systems Modeling** – Authoring a comprehensive architectural design document containing unified sequence diagrams and finite state machine (FSM) flowcharts mapping asynchronous ISR-to-Task handoffs.
+- [ ] **Phase 10: CI/CD Automated Verification Pipeline** – Integrating a GitHub Actions workflow to automatically run cross-compiler verification (both `idf.py` and the STM32 toolchain) on every repository commit.
 
 ---
 

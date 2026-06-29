@@ -2,9 +2,12 @@
 #include "stm32f103.h"
 #include "../stm32_func.h"
 
-translate_gpio_mode translate_gpio_mode_func    = stm32f103_translate_gpio_mode;
-get_gpio_port_block get_gpio_port_block_func    = stm32f103_get_port_block;
-
+//Rename these functions so it has stm32 in front
+stm32fn_translate_gpio_mode stm32fn_translate_gpio_mode_func    = stm32f103_translate_gpio_mode;
+stm32fn_get_gpio_port_block stm32fn_get_gpio_port_block_func    = stm32f103_get_port_block;
+stm32fn_verify_pin stm32fn_verify_pin_func                      = stm32f103_verify_pin;
+stm32fn_is_TX_pin stm32fn_is_TX_pin_func                        = stm32f103_is_TX_pin;
+stm32fn_is_RX_pin stm32fn_is_RX_pin_func                        = stm32f103_is_RX_pin;
 
 /**
  * @brief Translates generic HAL GPIO modes into the raw 4-bit CNF[1:0] + MODE[1:0] nibble 
@@ -50,11 +53,10 @@ uint8_t clear_port(uint8_t packed_pin)
     return packed_pin & 63;
 }
 
-hal_status_t verify_pin(uint8_t packed_pin)
+hal_status_t stm32f103_verify_pin(uint8_t packed_pin)
 {
     switch (packed_pin)
     {
-        case LOGGING_PIN:
         case STM_PIN_PA13:
         case STM_PIN_PA14:
         case STM_PIN_PA15:
@@ -92,13 +94,44 @@ volatile GPIO_BLOCK* stm32f103_get_port_block(uint8_t port)
     }
 }
 
-uint8_t associated_port_clock(uint8_t port)
+hal_status_t stm32f103_is_TX_pin(uint8_t pin)
 {
-    switch(port)
+    hal_status_t ret = stm32f103_verify_pin(pin);
+    if(ret != HAL_STATUS_OK)
     {
-        case 0:     return APB2_REG->bits.IOPA_EN;
-        case 1:     return APB2_REG->bits.IOPB_EN;
-        case 2:     return APB2_REG->bits.IOPC_EN;
-        default:    return 0;
+        return ret;
+    }
+
+    switch (pin)
+    {
+        case STM_PIN_PA02:
+        case STM_PIN_PA09:
+        case STM_PIN_PB06:
+        case STM_PIN_PB10:
+            return HAL_STATUS_OK;
+    
+    default:
+        return HAL_ERROR_GENERAL;
+    }
+}
+
+hal_status_t stm32f103_is_RX_pin(uint8_t pin)
+{
+    hal_status_t ret = stm32f103_verify_pin(pin);
+    if(ret != HAL_STATUS_OK)
+    {
+        return ret;
+    }
+
+    switch (pin)
+    {
+        case STM_PIN_PA03:
+        case STM_PIN_PA10:
+        case STM_PIN_PB07:
+        case STM_PIN_PB11:
+            return HAL_STATUS_OK;
+    
+    default:
+        return HAL_ERROR_GENERAL;
     }
 }

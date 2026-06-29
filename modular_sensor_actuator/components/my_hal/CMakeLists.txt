@@ -10,6 +10,7 @@ elseif(1 OR $ENV{PLATFORM_STM32})
     add_library(my_hal STATIC
         src/hal_func.c
         stm32/stm32.c
+        stm32/stm32_uart.c
         stm32/stm32f103/stm32f103.c
         utils/printf/printf.c
     )

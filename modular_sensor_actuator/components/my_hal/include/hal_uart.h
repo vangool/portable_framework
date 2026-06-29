@@ -73,18 +73,37 @@ typedef struct
     hal_uart_flow_control_t flow_ctrl;
 } hal_uart_config_t;
 
+typedef union
+{
+    struct 
+    {
+        uint64_t header     : 16;
+        uint64_t length     : 8;
+        uint64_t payload    : 32;
+        uint64_t checksum   : 8;
+    } uart_data;
+
+    uint64_t all;
+} hal_uart_data_t;
+
+typedef enum
+{
+    HAL_UART_PORT_0 = 0,
+    HAL_UART_PORT_1,
+    HAL_UART_PORT_2
+} hal_uart_port_t;
 
 typedef hal_status_t (*hal_uart_init)(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin);
-typedef void (*hal_uart_receive)();
-typedef void (*hal_uart_transmit)(const char* msg);
+typedef void (*hal_uart_receive)(hal_uart_port_t port);
+typedef void (*hal_uart_transmit)(const char* msg, hal_uart_port_t port);
 
 extern hal_uart_init hal_uart_init_func;
 extern hal_uart_receive hal_uart_receive_func;
 extern hal_uart_transmit hal_uart_transmit_func;
 
 hal_status_t hal_uart_init_default(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin);
-void hal_uart_receive_default();
-void hal_uart_transmit_default(const char* msg);
+void hal_uart_receive_default(hal_uart_port_t port);
+void hal_uart_transmit_default(const char* msg, hal_uart_port_t port);
 
 
 

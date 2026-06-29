@@ -128,7 +128,7 @@ hal_status_t esp32_uart_init(hal_uart_config_t* config, uint8_t transmit_pin, ui
     return HAL_STATUS_OK;
 }
 
-void esp32_uart_receive()
+void esp32_uart_receive(hal_uart_port_t port)
 {
     uart_event_t event;
     uint8_t data[128];
@@ -164,11 +164,23 @@ void esp32_uart_receive()
     }
 }
 
-void esp32_uart_transmit(const char* msg)
+void esp32_uart_transmit(const char* msg, hal_uart_port_t port)
 {
-    while(1)
+    switch (port)
     {
-        uart_write_bytes(UART_PORT, msg, strlen(msg));
-        vTaskDelay(pdMS_TO_TICKS(1500));
+    case HAL_UART_PORT_0:
+        return;
+    
+    case HAL_UART_PORT_1:
+        uart_write_bytes(UART_NUM_1, msg, strlen(msg)); //Returns value of strlen(msg) if it successful
+        return;
+
+    case HAL_UART_PORT_2:
+        uart_write_bytes(UART_NUM_2, msg, strlen(msg));
+        return;
+
+    default:
+        break;
     }
+
 }
