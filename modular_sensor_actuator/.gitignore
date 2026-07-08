@@ -28,6 +28,7 @@ obj/
 .project
 .cproject
 .metadata/
+../.metadata/
 
 #==============================================================================
 # Operating System Clutter

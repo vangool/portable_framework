@@ -15,6 +15,7 @@ typedef struct
     uint32_t last_run;
 } task_t;
 
+hal_status_t create_task(void* func, uint32_t delay);
 void scheduler_run(void);
 
 #endif // __SCHEDULER_H__

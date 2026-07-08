@@ -1,31 +1,29 @@
 #include "../include/scheduler.h"
 
-static void led1_task();
-static void led2_task();
+#define MAX_TASK_COUNT 12
 
-static task_t tasks [] =
+static task_t tasks [MAX_TASK_COUNT];
+static uint8_t task_count = 0;
+
+
+hal_status_t create_task(void* func, uint32_t delay)
 {
+    if(task_count >= MAX_TASK_COUNT)
     {
-        .func = led1_task,
-        .period_ms = 500,
-        .last_run = 0
-    },
-
-    {
-        .func = led2_task,
-        .period_ms = 1000,
-        .last_run = 0
+        return HAL_ERROR_GENERAL;
     }
-};
+    
+    task_t task = { .func = func, .last_run = 0, .period_ms = delay};
+    tasks[task_count] = task;
+    task_count++;
 
-#define TASK_COUNT 2
+    return HAL_STATUS_OK;
+}
 
 void scheduler_run()
 {
-    C_GPIO_BLOCK_REG->BSRR.bits.BR13 = 1;
-    while(1){}
     uint32_t current_tick = hal_timer_get_time_func();
-    for(int i = 0; i < TASK_COUNT; i++)
+    for(int i = 0; i < task_count; i++)
     {
         if((current_tick - tasks[i].last_run) >= tasks[i].period_ms)
         {

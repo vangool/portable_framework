@@ -116,12 +116,12 @@ hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
 
     if(pin >= 8)
     {
-        base_addr->CRH.all &= ~(0xF << ((pin - 8) * 4));
+        base_addr->CRH.all &= ~(0xFU << ((pin - 8) * 4));
         base_addr->CRH.all |= (gpio_config << ((pin - 8) * 4));
     }
     else
     {
-        base_addr->CRL.all &= ~(0xF << (pin * 4));
+        base_addr->CRL.all &= ~(0xFU << (pin * 4));
         base_addr->CRL.all |= (gpio_config << (pin * 4));
     }
 
