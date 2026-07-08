@@ -23,7 +23,54 @@ graph TD
     style OSAL fill:#1a365d,stroke:#2b6cb0,stroke-width:2px,color:#fff
     style HAL fill:#2c5282,stroke:#2b6cb0,stroke-width:2px,color:#fff
 ```
+### 📂 Repository File Structure
 
+```text
+├── main/                           # Application & Core Driver Layer
+│   ├── main.c                      # Portable, hardware-agnostic runtime execution entry
+│   └── ultrasonic/                 # Non-blocking, event-driven sensor driver implementation
+│       ├── ultrasonic.c
+│       └── ultrasonic.h
+│
+├── components/                     # Architecture Separation Subsystems
+│   ├── my_hal/                     # Hardware Abstraction Layer (HAL)
+│   │   ├── include/                # Hardware-agnostic common HAL peripheral definitions
+│   │   │   └── hal.h
+│   │   ├── src/                    # Shared HAL management routines
+│   │   │   └── hal.c               # Default fallback/stub implementations for host-side testing
+│   │   │
+│   │   ├── esp32/                  # ESP32 Target: Native ESP-IDF framework bindings
+│   │   │   ├── esp32.c / .h        # Target-specific initialization & GPIO interrupt configurations
+│   │   │   └── esp32_uart.c / .h   # Native ESP-IDF UART peripheral tracking
+│   │   │
+│   │   └── stm32/                  # STM32 Multi-Chip Abstraction Engine
+│   │       ├── addr.h              # Unified base address mappings for STM32 peripherals
+│   │       ├── stm32_func.h        # Cross-chip bridge interface (e.g., abstract port routing prototypes)
+│   │       ├── stm32.c / .h        # Unified STM32 common peripheral interface routing
+│   │       ├── stm32_uart.c / .h   # Register-level BRR, CR1, and status polling engines
+│   │       └── stm32f103/          # Concrete MCU Implementation Layer
+│   │           ├── cortexm3.c / .h # ARM Cortex-M3 core configuration and SysTick definitions
+│   │           ├── stm32f103_intr.c / .h # Register-level EXTI & NVIC asynchronous interrupt mapping
+│   │           ├── stm32f103.c / .h # Target-specific port addresses and hardware configurations
+│   │           ├── stm32f103.ld    # Custom Linker Script defining memory-mapped Flash/SRAM regions
+│   │           └── stm32f103.s     # Low-level Assembly startup file (vector table & context reset)
+│   │    
+│   └── osal/                       # Operating System Abstraction Layer (OSAL)
+│       ├── include/                # Abstract multi-task scheduling & queue primitives
+│       │   └── osal.h
+│       ├── src/                    # Shared OSAL interface wrappers
+│       │   └── osal.c
+│       └── freertos/               # ESP32 Target: FreeRTOS kernel implementation
+│           └── freertos.c / .h     # Native FreeRTOS queue & task bindings
+│
+├── test/                           # Off-Silicon Host Verification Suite (x86_64)
+│   ├── hal_wrapper.hpp             # Virtual proxy isolation harness for GoogleMock
+│   ├── test_keys.hpp               # Mock behavior expectations and injection constants
+│   └── ultrasonic_test.cpp         # GoogleTest suite (ISR stimulus & edge-case validation)
+│
+└── build_script.sh                 # Unified automation cross-compilation & flash entry point
+
+```
 
 ### Key Software Engineering Pillars
 
@@ -48,6 +95,31 @@ graph TD
 * **Strict Build Enforcements:** Pre-configured via CMake to force `-Wall -Wextra -Werror` compiler flags strictly on custom logic targets while allowing vendor framework dependencies to build unmodified.
 
 ---
+## 🔄 Architectural Data Flow (ISR-to-Task Pipeline)
+
+Because the sensor relies on precise time-of-flight measurements, data acquisition is entirely split into an asynchronous outbound trigger and a dual-edge edge-triggered inbound capture stream. The main application loop remains completely non-blocking, executing continuous evaluation without putting the processor into a deep sleep state.
+
+### Transimitting Sonic Burst 
+```text
+[Application Task] ──> [HAL GPIO Write] ──> [US100 Trigger Pin HIGH for 10µs] ──> [Sensor Transmits Sonic Burst]
+```
+
+### Receiving Sonic Burst
+```text                                             
+[Echo Pin Goes HIGH] ──> [EXTI Rising Edge ISR]  ──> [Capture Start Timestamp (t1)]
+                                                             │
+                                                     (Sensor waiting...)
+                                                             │
+[Echo Pin Goes LOW]  ──> [EXTI Falling Edge ISR] ──> [Capture End Timestamp (t2)]
+                                                             │
+                                                     [Calculate Delta: t2 - t1]
+                                                             │
+                                                     [OSAL Queue Push (Atomic Struct)]
+                                                             │
+                                                     [Application Dequeues & Outputs Distance]
+```
+
+---
 
 ## 🚀 Project Evolution Roadmap
 
@@ -70,17 +142,17 @@ This project was built using an organic, test-driven refactoring pipeline—movi
 
 - [x] **Phase 6: Polymorphic Driver Binding** – Refactor the core UART drivers into the modular HAL configuration matrix (`hal_uart`).
 
-- [x] **Phase 7.1 STMF103 Clock and GPIO:** Port the abstract HAL interfaces down to direct Memory-Mapped I/O register layouts (GPIO & USART clock gating, status polling) on the STM32F103 platform.
-- [x] **Phase 7.2 STM32 UART Peripheral Engine:** Port abstract serial interfaces down to direct Memory-Mapped I/O register layouts, configuring clock gating (APB2ENR & APB1ENR), baud rate generation (BRR), control pipelines (CR1), and status-driven transmission polling (SR / TXE).
+- [ ] **Phase 7: Bare-Metal STM32F103 Register Integration** –
+    - [x] **7.1 STMF103 Clock and GPIO:** Port the abstract HAL interfaces down to direct Memory-Mapped I/O register layouts (GPIO & USART clock gating, status polling) on the STM32F103 platform.
+    - [x] **7.2 STM32 UART Peripheral Engine:** Port abstract serial interfaces down to direct Memory-Mapped I/O register layouts, configuring clock gating (APB2ENR & APB1ENR), baud rate generation (BRR), control pipelines (CR1), and status-driven transmission polling (SR / TXE).
+    - [x] **7.3: STM32 Asynchronous EXTI Interrupt Engine** – Implementing raw hardware external interrupt configuration (EXTI) and basic timer captures on the STM32 to match the asynchronous performance of the ESP32 build.
 
 ### 🟡 In Progress
 - [ ] **Phase 2.3: ISR Defense** ISR Defensive Bounds & Race-Condition Mitigation
+- [ ] **Phase 7.4: Watchdog integration:** Implement an independent hardware watchdog (IWDG) using direct register manipulation, establishing a reliable hardware-driven fallback to catch and recover from system lockups or frozen execution loops.
+- [ ] **Phase 7.5 STM32 Scheduling and Threads:** Engineer a custom, preemptive Round-Robin scheduler driven by the ARM SysTick heartbeat, utilizing assembly context switching (PendSV) and custom Task Control Blocks (TCBs) to run multiple independent threads.
 
-- [ ] **Phase 7: Bare-Metal STM32F103 Register Integration**
-    - [ ] **7.3 STM32 Scheduling and Threads:** Engineer a custom, preemptive Round-Robin scheduler driven by the ARM SysTick heartbeat, utilizing assembly context switching (PendSV) and custom Task Control Blocks (TCBs) to run multiple independent threads.
-    - [ ] **7.4: STM32 Asynchronous EXTI Interrupt Engine** – Implementing raw hardware external interrupt configuration (EXTI) and basic timer captures on the STM32 to match the asynchronous performance of the ESP32 build.
-
-- [ ] **Phase 8: Host-Side C++ Simulation & Testing Engine (GoogleTest / GoogleMock)**
+- [ ] **Phase 8: Host-Side C++ Simulation & Testing Engine (GoogleTest / GoogleMock)** –
   - [ ] **8.3 OSAL Queue & Task Mocking:** Implement strict mocks for `osal.h` primitives to simulate task synchronization and thread-safe data pipelines on the host PC.
   - [ ] **8.4 Asynchronous ISR Injection:** Write a gtest test fixture that simulates hardware events by manually invoking the US100 interrupt service handler, verifying that the timestamp data routes correctly through the mocked OSAL layer.
   - [ ] **8.5 Defensive Edge-Case Verification:** Validate the driver's state machine against simulated hardware faults, including timeout constraints, corrupted UART frames, and invalid ultrasonic echo pulse widths.
@@ -93,20 +165,25 @@ This project was built using an organic, test-driven refactoring pipeline—movi
 ## 💻 Getting Started
 
 ### Prerequisites
-* Espressif ESP-IDF SDK (v6.1+) installed and configured in your path
-* CMake and Ninja build systems
+* **For ESP32 Builds:** Espressif ESP-IDF SDK (v6.1+) installed and configured in your path
+* **For STM32 Builds:** ARM GNU Toolchain (`arm-none-eabi-gcc`) and an open-source flash utility (e.g., `st-flash` or `OpenOCD`)
+* **Core Build Engine:** CMake and Ninja build systems
 
-### Building and Flashing via ESP-IDF CLI
+### Building and Flashing via Unified Automation Script
 
-To compile, build, and deploy the project targeting the ESP32 framework execution layout, run the following commands in your terminal:
+The repository includes a unified `build_script.sh` engine that abstracts away individual framework build tools, handling environment configuration, cross-compilation, target flashing, and serial monitoring automatically based on your platform argument.
 
 ```bash
 # Clone the repository workspace
 git clone [https://github.com/yourusername/modular-sensor-actuator.git](https://github.com/yourusername/modular-sensor-actuator.git)
 cd modular-sensor-actuator
 
-# Configure your compilation target environment 
-idf.py set-target esp32
+# Make the automation engine executable
+chmod +x build_script.sh
 
-# Execute compile, flash binary to target device, and open serial console monitor
-idf.py build flash monitor
+# Target Option A: Compile, flash, and monitor the ESP32 framework
+./build_script.sh ESP32
+
+# Target Option B: Compile, and flash the Bare-Metal STM32F103 platform
+./build_script.sh STM32
+```

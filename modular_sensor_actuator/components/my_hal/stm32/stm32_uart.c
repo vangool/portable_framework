@@ -1,3 +1,58 @@
+/**
+ * @file stm32_uart.c
+ * @brief STM32 UART hardware abstraction layer implementation.
+ *
+ * This source file provides the STM32-specific implementation of the UART
+ * hardware abstraction layer. It translates the generic HAL UART interface
+ * into STM32 peripheral configuration and register operations.
+ *
+ * The module is responsible for configuring STM32 UART/USART peripherals,
+ * assigning GPIO pins using the appropriate alternate-function mappings, and
+ * providing transmit and receive functionality through the HAL interface.
+ *
+ * Responsibilities include:
+ * - UART peripheral initialization
+ * - UART clock and peripheral configuration
+ * - GPIO configuration for UART TX/RX pins
+ * - UART data transmission
+ * - UART data reception
+ * - STM32-specific UART resource management
+ *
+ * This module should not be accessed directly by application code. Applications
+ * should use the platform-independent HAL UART interface, which internally
+ * selects the appropriate platform implementation.
+ *
+ * @note This file contains STM32-specific implementation details and relies on
+ *       STM32 UART/USART peripherals.
+ *
+ * @ingroup STM32_HAL
+ *
+ * @author Michael Van Gool
+ * @date 2026-07-07
+ *
+ * MIT License
+ *
+ * Copyright (c) 2026 Michael Van Gool
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "stm32_uart.h"
 #include "stm32_func.h"
 
@@ -83,8 +138,6 @@ void stm32_uart_receive(hal_uart_port_t port)
 
 void stm32_uart_transmit(const char* msg, hal_uart_port_t port)
 {
-    hal_gpio_set_level_func(STM_PIN_PC13, HAL_GPIO_HIGH);
-
     volatile USART_BLOCK* USART_REG;
     switch (port)
     {
@@ -109,7 +162,4 @@ void stm32_uart_transmit(const char* msg, hal_uart_port_t port)
     }
 
     while (!(USART_REG->SR.bits.TC));
-
-    hal_gpio_set_level_func(STM_PIN_PC13, HAL_GPIO_LOW);
-
 }

@@ -147,12 +147,12 @@ void esp32_uart_receive(hal_uart_port_t port)
                         portMAX_DELAY);
 
                 data[len] = '\0';
-                hal_log(HAL_LOG_INFO, TAG, "Received: %s", (char*)data);
+                hal_log_func(HAL_LOG_INFO, TAG, "Received: %s", (char*)data);
                 break;
 
             case UART_FIFO_OVF:
             case UART_BUFFER_FULL:
-                hal_log(HAL_LOG_WARN, TAG, "UART queue overflow!");
+                hal_log_func(HAL_LOG_WARN, TAG, "UART queue overflow!");
                 uart_flush_input(UART_PORT);
                 xQueueReset(uart_queue);
                 break;

@@ -1,13 +1,69 @@
+/**
+ * @file stm32f103.h
+ * @brief STM32F103 device-specific hardware abstraction definitions.
+ *
+ * This header provides STM32F103-specific definitions required by the STM32
+ * hardware abstraction layer. It contains device-family mappings, peripheral
+ * definitions, GPIO configurations, and hardware-specific information required
+ * to support the STM32F103 series of microcontrollers.
+ *
+ * The purpose of this file is to isolate STM32F103 device-specific details from
+ * the common STM32 HAL implementation. This allows the higher-level HAL code to
+ * support multiple STM32 families while keeping device-specific configuration
+ * contained within the appropriate target module.
+ *
+ * Responsibilities include:
+ * - STM32F103 peripheral mappings
+ * - GPIO port and pin definitions
+ * - UART/USART pin mappings
+ * - Device-specific hardware constants
+ * - STM32F103 capability definitions
+ *
+ * This header should only contain STM32F103-specific information. Generic HAL
+ * interfaces and platform-independent functionality should be placed in the
+ * common STM32 HAL headers instead.
+ *
+ * @note This file is intended to be included by STM32F103 HAL implementations
+ *       and should not normally be included directly by application code.
+ *
+ * @ingroup STM32_HAL
+ *
+ * @author Michael Van Gool
+ * @date 2026-07-07
+ *
+ * MIT License
+ *
+ * Copyright (c) 2026 Michael Van Gool
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef __STM32F103C8T6_H__
 #define __STM32F103C8T6_H__
 
 #include <stdint.h>
 
 #include "../../include/hal.h"
+#include "cortex_m3.h"
 
 #define NUM_OF_PORTS 3
-#define REG_PTR volatile uint32_t*
-#define REG_TYPE volatile uint32_t
+#define TOTAL_PINS_MASK 15
 
 /******************************************************************************
  * 
@@ -67,16 +123,16 @@ typedef union
 {
     struct
     {
-        REG_TYPE AFIO_EN            : 1; // Bit 0: Alternate Function I/O Clock Enable
+        REG_TYPE AFIO_EN            : 1; // Bit 0: [AFIOEN] Alternate Function I/O Clock Enable
         REG_TYPE _reserved1         : 1; // Bit 1
-        REG_TYPE IOPA_EN            : 1; // Bit 2: GPIO Port A Clock Enable
-        REG_TYPE IOPB_EN            : 1; // Bit 3: GPIO Port B Clock Enable
-        REG_TYPE IOPC_EN            : 1; // Bit 4: GPIO Port C Clock Enable
+        REG_TYPE IOPA_EN            : 1; // Bit 2: [IOPAEN] GPIO Port A Clock Enable
+        REG_TYPE IOPB_EN            : 1; // Bit 3: [IOPBEN] GPIO Port B Clock Enable
+        REG_TYPE IOPC_EN            : 1; // Bit 4: [IOPCEN] GPIO Port C Clock Enable
         REG_TYPE _reserved2         : 4; // Bit 5-8
-        REG_TYPE ADC1_EN            : 1; // Bit 9: Analog to Digital Converter 1 Clock Enable
+        REG_TYPE ADC1_EN            : 1; // Bit 9: [ADC1EN] Analog to Digital Converter 1 Clock Enable
         REG_TYPE _reserved3         : 3; // Bit 10-12
-        REG_TYPE SPI1_EN            : 1; // Bit 13: SPI 1  Clock Enable
-        REG_TYPE USART1_EN          : 1; // Bit 14: USART 1  Clock Enable
+        REG_TYPE SPI1_EN            : 1; // Bit 13: [SPI1EN] SPI 1  Clock Enable
+        REG_TYPE USART1_EN          : 1; // Bit 14: [USART1] USART 1  Clock Enable
         REG_TYPE _reserved4         : 17; // Bit 15-31 
     } bits;
 
@@ -151,8 +207,8 @@ typedef union
     struct
     {
         REG_TYPE _reserved1         : 24; // Bit 0-23
-        REG_TYPE TRC_ARCHICT_EN     : 1; // Bit 24: Trace Archictecture Enable
-        REG_TYPE _reserved2         : 7; // Bit 25-31
+        REG_TYPE TRC_ARCHICT_EN     : 1;  // Bit 24: [TRCENA] Trace Archictecture Enable
+        REG_TYPE _reserved2         : 7;  // Bit 25-31
     } bits;
 
     REG_TYPE all;
@@ -178,22 +234,6 @@ typedef struct
 } DWT_BLOCK;
 #define DWT_BLOCK_REG               ((volatile DWT_BLOCK*) 0xE0001000UL)  // Data Watchpoint and Trace
 
-
-
-/******************************************************************************
- * 
- * System Tick Handler
- * 
-******************************************************************************/
-
-typedef struct 
-{
-    REG_TYPE STK_CTRL;       // (*(volatile uint32_t *)(STK_BASE + 0x00)); // SysTick Control & Status Register
-    REG_TYPE STK_LOAD;        // (*(volatile uint32_t *)(STK_BASE + 0x04)); // SysTick Reload Value Register
-    REG_TYPE STK_VAL;         // (*(volatile uint32_t *)(STK_BASE + 0x08)); // SysTick Current Value Register
-} SYSTK_BLOCK;
-
-#define STK_REG             ((volatile SYSTK_BLOCK*)  0xE000E010UL)
 
 /******************************************************************************
  * 
@@ -267,7 +307,7 @@ typedef struct
  * PORT A GPIO PINS
  * 
 ******************************************************************************/
-#define A_GPIO_BASE             0x40010800UL
+#define A_GPIO_BASE 0x40010800UL
 
 
 /**
@@ -779,6 +819,88 @@ typedef struct
 #define B_GPIO_BLOCK_REG             ((volatile GPIO_BLOCK*) B_GPIO_BASE)
 #define C_GPIO_BLOCK_REG             ((volatile GPIO_BLOCK*) C_GPIO_BASE)
 
+/******************************************************************************
+ *
+ * Interrupts (EXTI)
+ *  
+******************************************************************************/
+
+typedef enum
+{
+    EXTI_LINE_0 = 0,
+    EXTI_LINE_1,
+    EXTI_LINE_2,
+    EXTI_LINE_3,
+    EXTI_LINE_4,
+    EXTI_LINE_5,
+    EXTI_LINE_6,
+    EXTI_LINE_7,
+    EXTI_LINE_8,
+    EXTI_LINE_9,
+    EXTI_LINE_10,
+    EXTI_LINE_11,
+    EXTI_LINE_12,
+    EXTI_LINE_13,
+    EXTI_LINE_14,
+    EXTI_LINE_15,
+    EXTI_LINE_16,
+    EXTI_LINE_17,
+    EXTI_LINE_18,
+    EXTI_LINE_19,
+} EXTI_LINE_e;
+
+typedef struct
+{
+    REG_TYPE IMR;      // Interrupt Mask Register
+    REG_TYPE EMR;      // Event Mask Register
+    REG_TYPE RTSR;     // Rising trigger selection register
+    REG_TYPE FTSR;     // Falling trigger selection register
+    REG_TYPE SWIER;    // Software interrupt event register
+    REG_TYPE PR;       // Pending Register
+} EXTI_BLOCK;
+
+#define EXTI_BLOCK_REG      ((volatile EXTI_BLOCK*) 0x40010400)
+
+/******************************************************************************
+ *
+ * Alternate Function Input Output AFIO
+ *  
+******************************************************************************/
+typedef struct
+{
+    uint32_t val         : 4;
+} exti_field_t;
+
+typedef union 
+{
+    struct 
+    {
+        volatile exti_field_t exti_x[4];
+        REG_TYPE _reserved  :16;
+    } bits;
+
+    REG_TYPE all;
+} EXTI_r;
+
+
+typedef struct {
+    volatile EXTI_r* exti_cr;
+    uint8_t exti_index;
+    volatile uint32_t* nvic_reg;
+    uint8_t nvic_shift;
+} exti_hw_map_t;
+
+typedef struct
+{
+    REG_TYPE EV_CR;             // [EVCR] Event Control
+    REG_TYPE RMAP_R;            // [MAPR] Remap Register
+    volatile EXTI_r EXTI_CR1;   // [EXTICR1]
+    volatile EXTI_r EXTI_CR2;   // [EXTICR2]
+    volatile EXTI_r EXTI_CR3;   // [EXTICR3]
+    volatile EXTI_r EXTI_CR4;   // [EXTICR4]
+} AFIO_BLOCK;
+
+#define AFIO_BLOCK_REG      ((volatile AFIO_BLOCK*) 0x40010000)
 
 /******************************************************************************
  *
@@ -786,10 +908,78 @@ typedef struct
  *  
 ******************************************************************************/
 
+/**
+ * @brief Converts a generic HAL GPIO configuration into an STM32F103 GPIO mode.
+ *
+ * Translates the platform-independent GPIO configuration provided by the HAL
+ * into the corresponding STM32F103 GPIO mode value used by the GPIO peripheral
+ * configuration registers.
+ *
+ * @param[in] hal_pin_cfg Generic HAL GPIO configuration value.
+ *
+ * @return STM32F103-specific GPIO mode identifier.
+ */
 uint8_t stm32f103_translate_gpio_mode(hal_gpio_config_t hal_pin_cfg);
+
+/**
+ * @brief Retrieves the STM32F103 GPIO port identifier for a pin.
+ *
+ * Converts a HAL pin identifier into the corresponding STM32F103 GPIO port
+ * index. This value is used to access the correct GPIO peripheral block.
+ *
+ * @param[in] pin STM32 packed pin identifier.
+ *
+ * @return STM32F103 GPIO port identifier.
+ */
+uint8_t stm32f103_get_port_id(uint8_t pin);
+
+/**
+ * @brief Retrieves the STM32F103 GPIO peripheral register block.
+ *
+ * Returns the memory-mapped GPIO register block associated with the specified
+ * STM32F103 GPIO port.
+ *
+ * @param[in] port STM32F103 GPIO port identifier.
+ *
+ * @return Pointer to the GPIO peripheral register block.
+ */
 volatile GPIO_BLOCK* stm32f103_get_port_block(uint8_t port);
+
+/**
+ * @brief Verifies whether an STM32F103 GPIO pin is valid.
+ *
+ * Checks whether the supplied pin identifier corresponds to a supported GPIO
+ * pin available on the target STM32F103 device.
+ *
+ * @param[in] pin Packed pin identifier to validate.
+ *
+ * @return HAL status code indicating whether the pin is valid.
+ */
 hal_status_t stm32f103_verify_pin(uint8_t pin);
+
+/**
+ * @brief Checks whether an STM32F103 pin supports UART transmission.
+ *
+ * Determines whether the specified GPIO pin can be configured as a UART TX
+ * pin based on the STM32F103 alternate-function mapping.
+ *
+ * @param[in] pin Packed pin identifier to check.
+ *
+ * @return HAL status code indicating whether the pin supports UART TX.
+ */
 hal_status_t stm32f103_is_TX_pin(uint8_t pin);
-hal_status_t stm32f103_is_RX_pin(uint8_t pin); 
+
+/**
+ * @brief Checks whether an STM32F103 pin supports UART reception.
+ *
+ * Determines whether the specified GPIO pin can be configured as a UART RX
+ * pin based on the STM32F103 alternate-function mapping.
+ *
+ * @param[in] pin Packed pin
+ *
+ * @return HAL status code indicating whether the pin supports UART RX.
+ */
+hal_status_t stm32f103_is_RX_pin(uint8_t pin);
+
 
 #endif //__STM32F103C8T6

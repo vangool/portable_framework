@@ -93,14 +93,74 @@ typedef enum
     HAL_UART_PORT_2
 } hal_uart_port_t;
 
-typedef hal_status_t (*hal_uart_init)(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin);
-typedef void (*hal_uart_receive)(hal_uart_port_t port);
-typedef void (*hal_uart_transmit)(const char* msg, hal_uart_port_t port);
+/**
+ * @typedef hal_uart_init
+ * @brief Function pointer type for initializing a UART peripheral.
+ *
+ * Defines the interface used by the HAL to initialize a UART peripheral.
+ * Platform-specific implementations are responsible for configuring the
+ * underlying hardware while exposing a common interface to higher-level HAL
+ * modules.
+ *
+ * @param config
+ * Pointer to the UART configuration structure containing parameters such as
+ * baud rate, data format, parity, stop bits, and UART port selection.
+ *
+ * @param transmit_pin
+ * GPIO pin identifier used for UART transmission (TX).
+ *
+ * @param receive_pin
+ * GPIO pin identifier used for UART reception (RX).
+ *
+ * @return
+ * HAL status code indicating whether UART initialization succeeded.
+ */
+typedef hal_status_t (*hal_uart_init)(hal_uart_config_t* config,
+                                      uint8_t transmit_pin,
+                                      uint8_t receive_pin);
 
+/**
+ * @typedef hal_uart_receive
+ * @brief Function pointer type for receiving UART data.
+ *
+ * Defines the interface used by the HAL to receive data from a UART peripheral.
+ * The platform-specific implementation handles the hardware access required to
+ * retrieve incoming UART data.
+ *
+ * @param port
+ * UART peripheral identifier to receive data from.
+ *
+ * @return
+ * None.
+ */
+typedef void (*hal_uart_receive)(hal_uart_port_t port);
+
+/**
+ * @typedef hal_uart_transmit
+ * @brief Function pointer type for transmitting UART data.
+ *
+ * Defines the interface used by the HAL to transmit data through a UART
+ * peripheral. The platform-specific implementation handles the underlying UART
+ * hardware communication.
+ *
+ * @param msg
+ * Pointer to the null-terminated string to transmit.
+ *
+ * @param port
+ * UART peripheral identifier to transmit data through.
+ *
+ * @return
+ * None.
+ */
+typedef void (*hal_uart_transmit)(const char* msg,
+                                  hal_uart_port_t port);
+
+/* Active Implementations */
 extern hal_uart_init hal_uart_init_func;
 extern hal_uart_receive hal_uart_receive_func;
 extern hal_uart_transmit hal_uart_transmit_func;
 
+/* Default Implementations */
 hal_status_t hal_uart_init_default(hal_uart_config_t* config, uint8_t transmit_pin, uint8_t receive_pin);
 void hal_uart_receive_default(hal_uart_port_t port);
 void hal_uart_transmit_default(const char* msg, hal_uart_port_t port);

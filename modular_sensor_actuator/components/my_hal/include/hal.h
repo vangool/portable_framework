@@ -32,21 +32,12 @@
  * SOFTWARE.
  ******************************************************************************/
 
-#ifndef HAL_GPIO_H_
-#define HAL_GPIO_H_
-
-// Universal pin definitions, direction enums (INPUT, OUTPUT), 
-// resistor pulling options, and generic GPIO API prototypes go here...
-
-#endif /* HAL_GPIO_H_ */
-
 #ifndef __HAL_H__ //Hardware Abstraction Layer
 #define __HAL_H__
 
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "../utils/printf/printf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +52,8 @@ typedef enum {
     HAL_ERROR_INVALID_ARG,
     HAL_ERROR_GENERAL,
     HAL_ERROR_DEFAULT_IMPLEMENTATION,
-    HAL_ERROR_RESTRICTED
+    HAL_ERROR_RESTRICTED,
+    HAL_ERROR_NOT_SUPPORTED
 } hal_status_t;
 
 typedef enum {
@@ -73,16 +65,37 @@ typedef enum {
     HAL_GPIO_INTR_HIGH_LEVEL
 } hal_intr_type_t;
 
-typedef enum {
-    HAL_GPIO_MODE_DISABLE = 0,
-    HAL_GPIO_MODE_INPUT,
-    HAL_GPIO_MODE_OUTPUT,
-    HAL_GPIO_MODE_OUTPUT_OD,
-    HAL_GPIO_MODE_INPUT_OUTPUT,     // Push-Pull Bidirectional (Great for ESP32)
-    HAL_GPIO_MODE_INPUT_OUTPUT_OD,
+typedef enum
+{
+    HAL_GPIO_PULL_UP,
+    HAL_GPIO_PULL_DOWN,
+    HAL_GPIO_OPEN_DRAIN,
+    HAL_GPIO_PUSH_PULL,
+    HAL_GPIO_FLOATING
+} hal_gpio_pullcfg_t;
 
-    HAL_GPIO_MODE_ANALOG,
-    HAL_GPIO_MODE_AF_PP
+#define HAL_GPIO_DEF_ANALOG         (1 << 0)
+#define HAL_GPIO_DEF_INPUT          (1 << 1)
+#define HAL_GPIO_DEF_OUTPUT         (1 << 2)
+#define HAL_GPIO_DEF_PULLUP_EN      (1 << 3)
+#define HAL_GPIO_DEF_PULLDN_EN      (1 << 4)
+#define HAL_GPIO_DEF_OPENDRAIN      (1 << 5)
+#define HAL_GPIO_DEF_AF             (1 << 6)
+
+typedef enum
+{
+    HAL_GPIO_MODE_DISABLE = 0,
+    HAL_GPIO_MODE_ANALOG = HAL_GPIO_DEF_ANALOG,
+    HAL_GPIO_MODE_INPUT = HAL_GPIO_DEF_INPUT,
+    HAL_GPIO_MODE_OUTPUT = HAL_GPIO_DEF_OUTPUT,
+    HAL_GPIO_MODE_OUTPUT_OD = (HAL_GPIO_DEF_OUTPUT | HAL_GPIO_DEF_OPENDRAIN),
+    HAL_GPIO_MODE_INPUT_OUTPUT = (HAL_GPIO_DEF_INPUT | HAL_GPIO_DEF_OUTPUT),
+    HAL_GPIO_MODE_INPUT_OUTPUT_OD = (HAL_GPIO_DEF_INPUT | HAL_GPIO_DEF_OUTPUT | HAL_GPIO_DEF_OPENDRAIN), 
+    HAL_GPIO_MODE_OUTPUT_PUSHPULL = (HAL_GPIO_DEF_OUTPUT | HAL_GPIO_DEF_PULLDN_EN),
+    HAL_GPIO_MODE_INPUT_PULLUP = (HAL_GPIO_DEF_INPUT | HAL_GPIO_DEF_PULLUP_EN),
+    HAL_GPIO_MODE_INPUT_PULLDN = (HAL_GPIO_DEF_INPUT | HAL_GPIO_DEF_PULLDN_EN),
+    HAL_GPIO_MODE_AF_PUSHPULL = (HAL_GPIO_DEF_AF | HAL_GPIO_DEF_PULLUP_EN | HAL_GPIO_DEF_PULLDN_EN),
+    HAL_GPIO_MODE_AF_OD = (HAL_GPIO_DEF_AF | HAL_GPIO_DEF_OPENDRAIN)
 } hal_gpio_config_t;
 
 typedef enum {
@@ -128,7 +141,7 @@ typedef hal_status_t (*hal_gpio_set_direction)(uint8_t pin, hal_gpio_config_t di
  *
  * @return HAL_STATUS_OK on success, otherwise an error code.
  */
-typedef hal_status_t (*hal_gpio_set_level)(uint8_t pin, hal_gpio_level_t level);
+typedef hal_status_t (*hal_gpio_set_level)(uint8_t pin, uint8_t level);
 
 /**
  * @brief Read the level of a GPIO pin.
@@ -273,6 +286,19 @@ void hal_log_default(uint8_t level, const char* tag, const char* fmt, ...);
  */
 const char* hal_status_to_string(hal_status_t status);
 
+/** 
+ * @brief Converts a HAL log level to its string representation. 
+ * 
+ * Returns a constant, null-terminated string corresponding to the specified 
+ * log level. This function is primarily intended for logging and diagnostic
+ * output. 
+ * 
+ * @param[in] level HAL log level to convert. 
+ * 
+ * @return Pointer to a constant string representing the log level. If the
+ * supplied * log level is invalid or unrecognized, the string `"???"` is 
+ * returned. 
+ */
 const char* hal_log_level_to_string(hal_log_level_t level);
 
 hal_status_t is_unit_test();

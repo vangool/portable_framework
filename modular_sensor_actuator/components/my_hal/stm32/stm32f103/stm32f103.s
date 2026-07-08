@@ -18,6 +18,7 @@ __isr_vector:
     .word 0
     .word 0
     .word 0
+
     .word 0
     .word 0
     .word 0
@@ -26,6 +27,60 @@ __isr_vector:
     .word 0
     .word 0
     .word SysTick_Handler
+
+    .word WWDG_IRQHandler          /* 16: Window Watchdog Interrupt */
+    .word PVD_IRQHandler           /* 17: PVD through EXTI Line detection */
+    .word TAMPER_IRQHandler        /* 18: Tamper Interrupt */
+    .word RTC_IRQHandler           /* 19: RTC Global Interrupt */
+    .word FLASH_IRQHandler         /* 20: Flash Global Interrupt */
+    .word RCC_IRQHandler           /* 21: RCC Global Interrupt */
+    .word EXTI0_IRQHandler         /* 22: EXTI Line 0 Interrupt (Offset 0x58) */
+    .word EXTI1_IRQHandler         /* 23: EXTI Line 1 Interrupt */
+
+    .word EXTI2_IRQHandler         /* 24: EXTI Line 2 Interrupt */
+    .word EXTI3_IRQHandler         /* 25: EXTI Line 3 Interrupt */
+    .word EXTI4_IRQHandler         /* 26: EXTI Line 4 Interrupt */
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0                        /* 31 */
+
+    .word 0                        /* 32 */
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word EXTI9_5_IRQHandler        /* 39: EXTI Lines 5 - 9 Interrupt */
+
+    .word 0                         /* 40 */
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0                         /* 47 */
+
+    .word 0                         /* 48 */
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0                         /* 55 */
+
+    .word EXTI15_10_IRQHandler      /* 56: EXTI Lines 10 - 15 Interrupt */
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0
+    .word 0                         /* 63 */
 
 /* Reset handler */
 .section .text.Reset_Handler

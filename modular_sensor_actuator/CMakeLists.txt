@@ -4,21 +4,15 @@ set(ENV{PLATFORM_ESP32} 0)
 set(ENV{PLATFORM_STM32} 0)
 set(ENV{PLATFORM_MOCK}  0)
 
+message("CMAKE INFO: The value of TARGET_PLAFORM is: ${TARGET_PLATFORM}")
 
 if(TARGET_PLATFORM STREQUAL "ESP32")
-    message("
-    --- Auto-Detected ESP32 platform ---
-    ")
     set(ENV{PLATFORM_ESP32} 1)
 
     include($ENV{IDF_PATH}/tools/cmake/project.cmake)
     project(embedded_libraries)
 
 elseif(TARGET_PLATFORM STREQUAL "STM32")
-    message("
-    --- Auto-Detected STM32 platform ---
-    ")
-
     enable_language(ASM)
 
     set(ENV{PLATFORM_STM32} 1)

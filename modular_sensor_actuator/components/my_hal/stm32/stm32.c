@@ -1,6 +1,62 @@
+/**
+ * @file stm32.c
+ * @brief STM32 hardware abstraction layer core implementation.
+ *
+ * This source file provides the core STM32-specific implementation of the
+ * hardware abstraction layer (HAL). It contains common functionality required
+ * by STM32-based platforms and provides the foundation used by peripheral
+ * modules such as GPIO, UART, SPI, I2C, and timers.
+ *
+ * The purpose of this module is to isolate STM32-specific hardware access from
+ * application code and provide a consistent interface across supported
+ * microcontroller platforms.
+ *
+ * Responsibilities include:
+ * - STM32 hardware initialization
+ * - Common MCU configuration
+ * - HAL state management
+ * - STM32-specific utility functions
+ * - Initialization of shared hardware resources
+ *
+ * Peripheral-specific implementations are provided by their respective HAL
+ * modules and should not be initialized directly through this file unless
+ * explicitly required.
+ *
+ * @note This file contains STM32-specific implementation details and should not
+ *       be accessed directly by application-level code.
+ *
+ * @author Michael Van Gool
+ * @date 2026-07-07
+ *
+ * MIT License
+ *
+ * Copyright (c) 2026 Michael Van Gool
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "addr.h"
 #include "stm32.h"
 #include "stm32_func.h"
+
+#include "../utils/printf/printf.h"
+
 
 hal_gpio_set_direction          hal_gpio_set_direction_func         = stm32_gpio_set_direction;
 hal_gpio_set_level              hal_gpio_set_level_func             = stm32_gpio_set_level;
@@ -156,11 +212,12 @@ void stm32_clock_init(void)
     RCC_CFGR_REG->bits.SW = 2;
 
     while (RCC_CFGR_REG->bits.SWS != 2);
-    while (!(RCC_CR_REG->bits.PLLRDY)); 
+    while (!(RCC_CR_REG->bits.PLLRDY));
 
     APB2_REG->bits.IOPA_EN = 1;
     APB2_REG->bits.IOPB_EN = 1;
     APB2_REG->bits.IOPC_EN = 1;
+    APB2_REG->bits.AFIO_EN = 1;
 
     STK_REG->STK_LOAD = (APB2_CLK_SPEED / 1000) - 1;
     STK_REG->STK_VAL = 0;
@@ -176,12 +233,75 @@ void stm32_clock_init(void)
 
 hal_status_t stm32_gpio_set_intr_type(uint8_t pin, hal_intr_type_t type)
 {
-    return HAL_ERROR_DEFAULT_IMPLEMENTATION;
+    uint_fast8_t shift = pin & 31;
+
+    switch (type)
+    {
+        case HAL_GPIO_INTR_DISABLE:
+            EXTI_BLOCK_REG->IMR &= ~(1 << shift);
+            EXTI_BLOCK_REG->RTSR &= ~(1 << shift);
+            EXTI_BLOCK_REG->FTSR &= ~(1 << shift);
+            break;
+        case HAL_GPIO_INTR_ANYEDGE:
+            EXTI_BLOCK_REG->RTSR |= (1 << shift);
+            EXTI_BLOCK_REG->FTSR |= (1 << shift);
+            EXTI_BLOCK_REG->IMR |= (1 << shift);
+            break;
+        case HAL_GPIO_INTR_NEGEDGE:
+            EXTI_BLOCK_REG->RTSR &= ~(1 << shift);
+            EXTI_BLOCK_REG->FTSR |= (1 << shift);
+            EXTI_BLOCK_REG->IMR |= (1 << shift);
+            break;
+        case HAL_GPIO_INTR_POSEDGE:
+            EXTI_BLOCK_REG->RTSR |= (1 << shift);
+            EXTI_BLOCK_REG->FTSR &= ~(1 << shift);
+            EXTI_BLOCK_REG->IMR |= (1 << shift);
+            break;
+        case HAL_GPIO_INTR_HIGH_LEVEL:
+        case HAL_GPIO_INTR_LOW_LEVEL:
+            return HAL_ERROR_DEFAULT_IMPLEMENTATION;
+    
+        default:
+            return HAL_ERROR_INVALID_ARG;
+    }
+    
+    static const exti_hw_map_t exti_map[16] = {
+        [0]  = { &AFIO_BLOCK_REG->EXTI_CR1, 0, &NVIC_BLOCK_REG->I_SE_R0, 6 },  // CR1, exti[0]
+        [1]  = { &AFIO_BLOCK_REG->EXTI_CR1, 1, &NVIC_BLOCK_REG->I_SE_R0, 7 },  // CR1, exti[1]
+        [2]  = { &AFIO_BLOCK_REG->EXTI_CR1, 2, &NVIC_BLOCK_REG->I_SE_R0, 8 },  // CR1, exti[2]
+        [3]  = { &AFIO_BLOCK_REG->EXTI_CR1, 3, &NVIC_BLOCK_REG->I_SE_R0, 9 },  // CR1, exti[3]
+        [4]  = { &AFIO_BLOCK_REG->EXTI_CR2, 0, &NVIC_BLOCK_REG->I_SE_R0, 10 }, // CR2, exti[0]
+        [5]  = { &AFIO_BLOCK_REG->EXTI_CR2, 1, &NVIC_BLOCK_REG->I_SE_R0, 23 }, // CR2, exti[0]
+        [6]  = { &AFIO_BLOCK_REG->EXTI_CR2, 2, &NVIC_BLOCK_REG->I_SE_R0, 23 }, // CR2, exti[0]
+        [7]  = { &AFIO_BLOCK_REG->EXTI_CR2, 3, &NVIC_BLOCK_REG->I_SE_R0, 23 }, // CR2, exti[0]
+        [8]  = { &AFIO_BLOCK_REG->EXTI_CR3, 0, &NVIC_BLOCK_REG->I_SE_R0, 23 }, // CR3, exti[0]
+        [9]  = { &AFIO_BLOCK_REG->EXTI_CR3, 1, &NVIC_BLOCK_REG->I_SE_R0, 23 }, // CR3, exti[0]
+        [10] = { &AFIO_BLOCK_REG->EXTI_CR3, 2, &NVIC_BLOCK_REG->I_SE_R0, 8 },  // CR3, exti[0]
+        [11] = { &AFIO_BLOCK_REG->EXTI_CR3, 3, &NVIC_BLOCK_REG->I_SE_R0, 8 },  // CR3, exti[0]
+        [12] = { &AFIO_BLOCK_REG->EXTI_CR4, 0, &NVIC_BLOCK_REG->I_SE_R1, 8 },  // CR4, exti[0]
+        [13] = { &AFIO_BLOCK_REG->EXTI_CR4, 1, &NVIC_BLOCK_REG->I_SE_R1, 8 },  // CR4, exti[0]
+        [14] = { &AFIO_BLOCK_REG->EXTI_CR4, 2, &NVIC_BLOCK_REG->I_SE_R1, 8 },  // CR4, exti[0]
+        [15] = { &AFIO_BLOCK_REG->EXTI_CR4, 3, &NVIC_BLOCK_REG->I_SE_R1, 8 },  // CR4, exti[0]
+    };
+
+    uint8_t port = stm32fn_get_port_id_func(pin);
+    exti_map[shift].exti_cr->bits.exti_x[exti_map[shift].exti_index].val = port;
+    *(exti_map[shift].nvic_reg) |= (1 << exti_map[shift].nvic_shift);
+
+    return HAL_STATUS_OK;
 }
 
 hal_status_t stm32_gpio_isr_handler_add(uint8_t gpio_pin, void* isr_handler, void* args)
 {
-    return HAL_ERROR_DEFAULT_IMPLEMENTATION;
+    if (!isr_handler)
+    {
+        return HAL_ERROR_INVALID_ARG;
+    }
+
+    uint8_t pin_idx = stm32intr_get_isr_func_idx(gpio_pin);
+    pin_isr_handlers[pin_idx] = isr_handler;
+    isr_args[pin_idx] = args;
+    return HAL_STATUS_OK;
 }
 
 void stm32_rom_delay_us(uint32_t delay_us)

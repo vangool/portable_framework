@@ -11,7 +11,9 @@ fi
 echo "Starting build pipeline for target: $PLATFORM..."
 
 if [ "$PLATFORM" == "ESP32" ]; then
-	idf.py build
+	rm -rf build
+
+	idf.py -DTARGET_PLATFORM=ESP32 build
 elif [ "$PLATFORM" == "STM32" ]; then
 	rm -rf build
 	cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=arm-none-eabi.cmake -DTARGET_PLATFORM=STM32

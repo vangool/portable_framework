@@ -2,8 +2,8 @@
 #include "stm32f103.h"
 #include "../stm32_func.h"
 
-//Rename these functions so it has stm32 in front
 stm32fn_translate_gpio_mode stm32fn_translate_gpio_mode_func    = stm32f103_translate_gpio_mode;
+stm32fn_get_port_id stm32fn_get_port_id_func                    = stm32f103_get_port_id;
 stm32fn_get_gpio_port_block stm32fn_get_gpio_port_block_func    = stm32f103_get_port_block;
 stm32fn_verify_pin stm32fn_verify_pin_func                      = stm32f103_verify_pin;
 stm32fn_is_TX_pin stm32fn_is_TX_pin_func                        = stm32f103_is_TX_pin;
@@ -17,33 +17,30 @@ stm32fn_is_RX_pin stm32fn_is_RX_pin_func                        = stm32f103_is_R
  */
 uint8_t stm32f103_translate_gpio_mode(hal_gpio_config_t gpio_config)
 {
-    switch (gpio_config) 
+    if(HAL_GPIO_MODE_ANALOG || HAL_GPIO_MODE_ANALOG)
+    {
+        return 0;
+    }
+    switch (gpio_config)
     {
         case HAL_GPIO_MODE_DISABLE:
-        case HAL_GPIO_MODE_ANALOG:
-            return 0x0; 
-
-        case HAL_GPIO_MODE_INPUT:
-            return 0x4; 
-
-        case HAL_GPIO_MODE_OUTPUT:
-            return 0x3; 
-
-        case HAL_GPIO_MODE_OUTPUT_OD:       
-        case HAL_GPIO_MODE_INPUT_OUTPUT:    
-        case HAL_GPIO_MODE_INPUT_OUTPUT_OD:
-            return 0x7; 
-
-        case HAL_GPIO_MODE_AF_PP:
-            return 0xB; 
-
-        default:
-            return 0x0;
+        case HAL_GPIO_MODE_ANALOG:          return 0x0;
+        case HAL_GPIO_MODE_INPUT:           return 0x4;
+        case HAL_GPIO_MODE_INPUT_PULLUP:
+        case HAL_GPIO_MODE_INPUT_PULLDN:    return 0x8;
+        case HAL_GPIO_MODE_OUTPUT_PUSHPULL: return 0x3;
+        case HAL_GPIO_MODE_OUTPUT_OD:
+        case HAL_GPIO_MODE_INPUT_OUTPUT:
+        case HAL_GPIO_MODE_INPUT_OUTPUT_OD: return 0x7;
+        case HAL_GPIO_MODE_AF_PUSHPULL:     return 0xB;
+        case HAL_GPIO_MODE_AF_OD:           return 0xF;
+    
+        default:                            return 0x0;
     }
 }
 
 
-uint8_t get_port(uint8_t packed_pin)
+uint8_t stm32f103_get_port_id(uint8_t packed_pin)
 {
     return (packed_pin >> 6) & 3;
 }
