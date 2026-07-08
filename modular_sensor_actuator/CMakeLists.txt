@@ -21,7 +21,7 @@ elseif(TARGET_PLATFORM STREQUAL "STM32")
     project(embedded_libraries)
 
     add_subdirectory(components/my_hal)
-    #add_subdirectory(components/osal)
+    add_subdirectory(components/osal)
     add_subdirectory(main)
 
 endif()

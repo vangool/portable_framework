@@ -27,12 +27,12 @@ elseif($ENV{PLATFORM_STM32})
 	    main.c
     	../components/my_hal/stm32/stm32f103/stm32f103.s
 	    $<TARGET_OBJECTS:my_hal>
-    	#$<TARGET_OBJECTS:OSALCode>
+    	$<TARGET_OBJECTS:my_os>
 	)
 
 	target_link_libraries(firmware.elf PRIVATE
     	my_hal
-    	#OSALCode
+		my_os
 	)
 
 	target_compile_definitions(my_hal PRIVATE
