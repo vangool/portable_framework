@@ -58,8 +58,10 @@
 typedef enum 
 {
     OSAL_OK = 0,
-    OSAL_ERROR,
-    OSAL_TIMEOUT
+    OSAL_ERROR_GENERAL,
+    OSAL_ERROR_TIMEOUT,
+    OSAL_ERROR_DEFAULT_IMPLEMENTATION,
+    OSAL_ERROR_OVERFLOW
 } osal_status_t;
 
 typedef enum 
