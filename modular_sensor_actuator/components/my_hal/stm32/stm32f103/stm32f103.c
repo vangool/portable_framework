@@ -17,10 +17,6 @@ stm32fn_is_RX_pin stm32fn_is_RX_pin_func                        = stm32f103_is_R
  */
 uint8_t stm32f103_translate_gpio_mode(hal_gpio_config_t gpio_config)
 {
-    if(HAL_GPIO_MODE_ANALOG || HAL_GPIO_MODE_ANALOG)
-    {
-        return 0;
-    }
     switch (gpio_config)
     {
         case HAL_GPIO_MODE_DISABLE:
