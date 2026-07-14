@@ -14,6 +14,7 @@ if [ "$PLATFORM" == "ESP32" ]; then
 	rm -rf build
 
 	idf.py -DTARGET_PLATFORM=ESP32 build
+	idf.py -DTARGET_PLATFORM=ESP32 flash monitor
 elif [ "$PLATFORM" == "STM32" ]; then
 	rm -rf build
 	cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=arm-none-eabi.cmake -DTARGET_PLATFORM=STM32

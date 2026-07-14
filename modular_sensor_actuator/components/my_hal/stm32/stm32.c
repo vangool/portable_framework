@@ -73,8 +73,11 @@ volatile uint32_t system_ms = 0;
 void Default_Handler_Loop() { while (1) {} }
 
 void NMI_Handler(void) {}
+
 void HardFault_Handler(uint32_t *stack) 
 {   
+    hal_gpio_set_level_func(STM_PIN_PC13, HAL_GPIO_LOW);
+
     volatile uint32_t r0  = stack[0];
     volatile uint32_t r1  = stack[1];
     volatile uint32_t r2  = stack[2];
@@ -91,11 +94,12 @@ void UsageFault_Handler(void) { Default_Handler_Loop(); }
 
 void SVC_Handler(void) {}
 void DebugMon_Handler(void) {}
-void PendSV_Handler(void) {}
 
 void SysTick_Handler(void)
 {
     system_ms++;
+
+    SYS_CTRL_BLOCK->ICSR.bits.PEND_SV_SET = 1;
 }
 
 hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
@@ -116,12 +120,12 @@ hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
 
     if(pin >= 8)
     {
-        base_addr->CRH.all &= ~(0xF << ((pin - 8) * 4));
+        base_addr->CRH.all &= ~(0xFU << ((pin - 8) * 4));
         base_addr->CRH.all |= (gpio_config << ((pin - 8) * 4));
     }
     else
     {
-        base_addr->CRL.all &= ~(0xF << (pin * 4));
+        base_addr->CRL.all &= ~(0xFU << (pin * 4));
         base_addr->CRL.all |= (gpio_config << (pin * 4));
     }
 

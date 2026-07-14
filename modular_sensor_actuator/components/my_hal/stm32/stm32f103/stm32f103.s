@@ -3,8 +3,11 @@
 .thumb
 
 .global Reset_Handler
+.global PendSV_Handler
 .global SysTick_Handler
 .global _estack
+
+.extern current_tcb
 
 /* Vector table */
 .section .isr_vector,"a",%progbits
@@ -12,20 +15,20 @@
 __isr_vector:
     .word _estack          /* Top of Stack (0x20005000) */
     .word Reset_Handler    /* Reset Handler */
-    .word 0
-    .word 0
-    .word 0
-    .word 0
-    .word 0
+    .word NMI_Handler
+    .word HardFault_Handler
+    .word MemManage_Handler
+    .word BusFault_Handler
+    .word UsageFault_Handler
     .word 0
 
     .word 0
     .word 0
     .word 0
+    .word SVC_Handler + 1
     .word 0
     .word 0
-    .word 0
-    .word 0
+    .word PendSV_Handler
     .word SysTick_Handler
 
     .word WWDG_IRQHandler          /* 16: Window Watchdog Interrupt */
@@ -82,9 +85,12 @@ __isr_vector:
     .word 0
     .word 0                         /* 63 */
 
-/* Reset handler */
 .section .text.Reset_Handler
 .type Reset_Handler, %function
+
+.section .text.PendSV_Handler
+.type PendSV_Handler, %function
+
 .type SysTick_Handler, %function
 
 Reset_Handler:
@@ -130,6 +136,50 @@ _hang:
 .section .text.Default_Handler, "ax", %progbits
 Default_Handler:
     b Default_Handler
+
+PendSV_Handler:
+    CPSID I
+
+    MRS r0, PSP
+    STMDB r0!, {r4-r11}
+
+    LDR r1, =current_tcb
+    LDR r1, [r1]
+    STR r0, [r1]
+
+    PUSH { lr }
+    bl scheduler_run
+    POP { lr }
+
+    LDR r1, =current_tcb
+    LDR r1, [r1]
+    LDR r0, [r1]
+    LDMIA r0!, {r4-r11}
+    MSR PSP, r0
+
+    CPSIE I
+    
+    BX lr
+
+SVC_Handler:
+    CPSID I
+
+    LDR r1, =current_tcb
+    LDR r1, [r1]
+    LDR r0, [r1]          /* r0 = current_tcb->stack_ptr */
+
+    LDMIA r0!, {r4-r11}
+    MSR PSP, r0
+
+    MRS r0, CONTROL
+    ORR r0, r0, #2        /* Thread mode uses PSP */
+    MSR CONTROL, r0
+    ISB
+
+    CPSIE I
+
+    LDR lr, =0xFFFFFFFD
+    BX lr
 
 /* Map SysTick_Handler weakly to the Default_Handler loop */
 /* If you define void SysTick_Handler(void) in C, it will override this! */

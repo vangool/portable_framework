@@ -21,14 +21,21 @@ uint8_t stm32f103_translate_gpio_mode(hal_gpio_config_t gpio_config)
     {
         case HAL_GPIO_MODE_DISABLE:
         case HAL_GPIO_MODE_ANALOG:          return 0x0;
+
         case HAL_GPIO_MODE_INPUT:           return 0x4;
+
         case HAL_GPIO_MODE_INPUT_PULLUP:
         case HAL_GPIO_MODE_INPUT_PULLDN:    return 0x8;
+        case HAL_GPIO_MODE_OUTPUT:          return 0x2;
+
         case HAL_GPIO_MODE_OUTPUT_PUSHPULL: return 0x3;
+
         case HAL_GPIO_MODE_OUTPUT_OD:
         case HAL_GPIO_MODE_INPUT_OUTPUT:
         case HAL_GPIO_MODE_INPUT_OUTPUT_OD: return 0x7;
+
         case HAL_GPIO_MODE_AF_PUSHPULL:     return 0xB;
+
         case HAL_GPIO_MODE_AF_OD:           return 0xF;
     
         default:                            return 0x0;

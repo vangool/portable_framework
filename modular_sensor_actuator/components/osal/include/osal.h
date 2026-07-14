@@ -32,6 +32,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
+
 #ifndef __OSAL_H__
 #define __OSAL_H__
 
@@ -58,8 +59,10 @@
 typedef enum 
 {
     OSAL_OK = 0,
-    OSAL_ERROR,
-    OSAL_TIMEOUT
+    OSAL_ERROR_GENERAL,
+    OSAL_ERROR_TIMEOUT,
+    OSAL_ERROR_DEFAULT_IMPLEMENTATION,
+    OSAL_ERROR_OVERFLOW
 } osal_status_t;
 
 typedef enum 
@@ -96,6 +99,7 @@ static inline bool osal_queue_is_valid(osal_queue_t q)
 }
 
 typedef void (*osal_function_ptr)(void*);
+
 /**
  * @brief Notify a task from interrupt context.
  *
