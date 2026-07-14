@@ -32,6 +32,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
+
 #ifndef __OSAL_H__
 #define __OSAL_H__
 
@@ -98,6 +99,7 @@ static inline bool osal_queue_is_valid(osal_queue_t q)
 }
 
 typedef void (*osal_function_ptr)(void*);
+
 /**
  * @brief Notify a task from interrupt context.
  *

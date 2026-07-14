@@ -31,7 +31,7 @@
  * @ingroup STM32_HAL
  *
  * @author Michael Van Gool
- * @date 2026-07-07
+ * @date 2026-07-13
  *
  * MIT License
  *
@@ -64,6 +64,13 @@
 #define REG_PTR volatile uint32_t*
 #define REG_TYPE volatile uint32_t
 
+/******************************************************************************
+ *
+ * Cortex M3 Declarations
+ *  
+******************************************************************************/
+
+
 typedef struct 
 {
     REG_TYPE I_SE_R0;       // [NVIC_ISERx] Interrupt Set Enable Register
@@ -94,7 +101,7 @@ typedef struct
 
 /******************************************************************************
  *
- * Cortex M3 Declarations
+ *  EXTI Line Enum
  *  
 ******************************************************************************/
 
@@ -123,5 +130,44 @@ typedef struct
 } SYSTK_BLOCK;
 
 #define STK_REG             ((volatile SYSTK_BLOCK*)  0xE000E010UL)
+
+/******************************************************************************
+ * 
+ * System Control
+ * 
+******************************************************************************/
+typedef union
+{
+    struct 
+    {
+        REG_TYPE VECT_ACTIVE    : 9; // Bit 0-8: [VECTACTIVE]
+        REG_TYPE _reserved1     : 2; // Bit 9-10
+        REG_TYPE RETOBASE       : 1; // Bit 11
+        REG_TYPE VECT_PENDING   :10; // Big 12-21: [VECT_PENDING]
+        REG_TYPE ISR_PENDING    : 1; // Bit 22: [ISRPENDING]
+        REG_TYPE _reserved2     : 2; // Bit 23-24
+        REG_TYPE PEND_ST_CLR    : 1; // Bit 25: [PENDSTCLR] System Tick
+        REG_TYPE PEND_ST_SET    : 1; // Bit 26: [PENDSTSET]
+        REG_TYPE PEND_SV_CLR    : 1; // Bit 27: [PENDSVCLR] Pendable Service Call exception.
+        REG_TYPE PEND_SV_SET    : 1; // Bit 28: [PEND_SV_SET]
+        REG_TYPE _reserved3     : 2; // Bit 29-30
+        REG_TYPE NMI_PEND_SET   : 1; // Bit 31 [NMIPENDSET]
+    } bits;
+
+    REG_TYPE all; 
+} ICSR_r;
+
+
+
+typedef struct 
+{
+    REG_TYPE CPUID;         // [SCB_CPUID]
+    volatile ICSR_r ICSR;   // [SCB_ICSR]
+    REG_TYPE VTOR;          // [SCB_VTOR]
+    REG_TYPE AIRCR;         // [SCB_AIRCR]
+    REG_TYPE SCR;           // [SCB_SCR]
+} SYS_CTRL;
+
+#define SYS_CTRL_BLOCK      ((volatile SYS_CTRL*) 0xE000ED00)
 
 #endif //__CORTEX_M3_H__

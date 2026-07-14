@@ -39,7 +39,16 @@ elseif($ENV{PLATFORM_STM32})
 		PRINTF_INCLUDE_CONFIG_H
 	)
 
-	target_compile_options(firmware.elf PRIVATE -mcpu=cortex-m3 -mthumb -O0 -g -ffreestanding -nostartfiles)
+	target_compile_options(firmware.elf PRIVATE 
+		-mcpu=cortex-m3 
+		-mthumb
+		-O0
+		-Og
+		-g3 
+		-ffreestanding 
+		-nostartfiles
+		)
+
 	target_link_options(firmware.elf PRIVATE 
     	-mcpu=cortex-m3
 	    -mthumb
