@@ -86,7 +86,7 @@ void US100(void *pvParameters)
         }
         else
         {
-            hal_log(HAL_LOG_WARN, "SENSOR", "Ultrasonic timeout (no echo)\n");
+            hal_log_func(HAL_LOG_WARN, "SENSOR", "Ultrasonic timeout (no echo)\n");
         }
         osal_task_delay_ms_func(100); 
     }
@@ -99,7 +99,7 @@ void boss_task(void *pvParameters)
     {
         if(osal_pop_queue_func(sensor_queue, &received_msg, osal_max_delay))
         {
-            hal_log(HAL_LOG_INFO, "SENSOR", "Distance of: %d\n", received_msg.distance);
+            hal_log_func(HAL_LOG_INFO, "SENSOR", "Distance of: %d\n", received_msg.distance);
         }
         osal_task_delay_ms_func(100); 
     }
@@ -121,12 +121,12 @@ void BlinkLED(void *pvParameters)
 
 void UART_RX(void *pvParameters)
 {
-    hal_uart_receive_func();
+    hal_uart_receive_func(HAL_UART_PORT_2);
 }
 
 void UART_TX(void *pvParameters)
 {
-    hal_uart_transmit_func("Hello World!");
+    hal_uart_transmit_func("Hello World!", HAL_UART_PORT_2);
 }
 
 void app_main(void)
@@ -154,5 +154,9 @@ void app_main(void)
     osal_create_task_func(UART_RX, "UART", 4096, NULL, 1, NULL); 
     osal_create_task_func(UART_TX, "UART", 4096, NULL, 1, NULL);  
 
+}
 
+int main(void)
+{
+    app_main();
 }
