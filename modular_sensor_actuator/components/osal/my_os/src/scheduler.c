@@ -12,12 +12,13 @@
  * systems.
  *
  * @author: Michael Van Gool
- * @date: 2026-07-14
+ * @date: 2026-07-22
  * @license: MIT License
  ******************************************************************************/
 
-#include "../include/scheduler.h"
+#include "scheduler.h"
 
+#include "stm32.h"
 #include <stdalign.h>
 
 /**
@@ -62,6 +63,8 @@ static void idle_task(void);
  */
 static void idle_task(void)
 {
+    watchdog_feed(tasks[0].watchdog_id);
+    watchdog_check();
     while (1)
     {
         __asm volatile("wfi");
@@ -133,6 +136,7 @@ static osal_status_t create_task_helper(osal_function_ptr func, void* args, uint
 }
 
 void os_start(void) {
+    enable_threads();
     create_task_helper((osal_function_ptr)idle_task, NULL, 0);
     current_tcb->state = THREAD_RUNNING; 
     __asm volatile ("svc 0");
@@ -154,6 +158,7 @@ void update_wakeup(uint32_t time, uint32_t delay)
 {
     current_tcb->next_wakeup = time + delay;
     current_tcb->state = THREAD_SLEEP;
+    watchdog_feed(current_tcb->watchdog_id);
     SYS_CTRL_BLOCK->ICSR.bits.PEND_SV_SET = 1;
 }
 
@@ -182,7 +187,7 @@ void scheduler_run()
     bool found_ready = false;
     for (int i = 1; i < task_count; i++)
     {
-        int next = (start + i + 1) % task_count;
+        int next = (start + i) % task_count;
 
         if (tasks[next].state == THREAD_READY)
         {

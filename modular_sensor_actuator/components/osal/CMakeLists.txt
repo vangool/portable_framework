@@ -17,4 +17,10 @@ elseif($ENV{PLATFORM_STM32})
         my_os/include
         my_os/src
     )
+
+    target_link_libraries(my_os PRIVATE
+        my_hal
+        my_service
+    )
+
 endif()

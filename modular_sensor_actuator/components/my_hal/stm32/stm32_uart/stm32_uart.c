@@ -28,7 +28,7 @@
  * @ingroup STM32_HAL
  *
  * @author Michael Van Gool
- * @date 2026-07-07
+ * @date 2026-07-19
  *
  * MIT License
  *
@@ -54,7 +54,6 @@
  */
 
 #include "stm32_uart.h"
-#include "stm32_func.h"
 
 hal_uart_init hal_uart_init_func = stm32_uart_init;
 hal_uart_receive hal_uart_receive_func = stm32_uart_receive;

@@ -137,7 +137,14 @@ int16_t my_os_action_upon_notification(osal_bool_t clear_on_exit,
  *
  * @return OSAL_SUCCESS if the task is created successfully.
  */
-osal_result_t my_os_create_task();
+osal_result_t my_os_create_task(
+    osal_function_ptr task_function,
+    const char* const task_name,
+    const osal_stack_depth usStackDepth,
+    void *pvParameters,
+    osal_ubase_type priority,
+    osal_taskhandle_t* task_handler_var
+);
 
 /**
  * @brief Retrieves an item from an OSAL queue.

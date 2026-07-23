@@ -12,7 +12,7 @@
  * @license: MIT License (See header file for full license conditions)
  * Copyright (c) 2026 Michael Van Gool. All rights reserved.
  ******************************************************************************/
-#include "../include/hal.h"
+#include "hal.h"
 
 hal_gpio_set_direction          hal_gpio_set_direction_func         = hal_gpio_set_direction_default;
 hal_gpio_set_level              hal_gpio_set_level_func             = hal_gpio_set_level_default;

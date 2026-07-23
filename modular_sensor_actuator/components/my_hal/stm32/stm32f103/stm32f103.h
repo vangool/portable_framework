@@ -59,7 +59,7 @@
 
 #include <stdint.h>
 
-#include "../../include/hal.h"
+#include "hal.h"
 #include "cortex_m3.h"
 
 #define NUM_OF_PORTS 3
@@ -70,8 +70,9 @@
  * Reset and clock Controls
  * 
 ******************************************************************************/
-#define APB2_CLK_SPEED      72000000    // 72 000 000 MHz
-#define APB1_CLK_SPEED      36000000    // 36 000 000 MHz      
+#define APB2_CLK_SPEED      72000000U   // 72 000 000 Hz
+#define APB1_CLK_SPEED      36000000U   // 36 000 000 Hz
+#define LSI_CLK_SPEED       40000U      // 40 000 Hz      
 
 typedef union
 {
@@ -171,13 +172,10 @@ typedef union
     {
         REG_TYPE LSI_EN         : 1; // Bit 0: [LSION] LSI Enable (Low Speed Internal)
         REG_TYPE LSI_RDY        : 1; // Bit 1: [LSIRDY]LSI Ready
-        REG_TYPE _reserved1     : 6; // Bit 2-7
-        REG_TYPE LSI_CAL        : 8; // Bits 8-15 [LSICAL] LSI Calibration Value
-
-        REG_TYPE _reserved2     : 8; // Bit 16-23
+        REG_TYPE _reserved1     :22; // Bit 2-23
 
         REG_TYPE RMVF           : 1; // Bit 24: Remove Reset Flags
-        REG_TYPE _reserved3     : 1; // Bit 25
+        REG_TYPE _reserved2     : 1; // Bit 25
         
         REG_TYPE PIN_RST_F      : 1; // Bit 26: [PINRSTF] Reset pin triggered reset flag
         REG_TYPE POR_RST_F      : 1; // Bit 27: [PORRSTF] Power-on Reset flag
@@ -189,7 +187,7 @@ typedef union
 
     REG_TYPE all;
 } RCC_CSR_r;
-#define RCC_CSR_REG         ((volatile RCC_CFGR_r*) 0x40021024UL);
+#define RCC_CSR_REG         ((volatile RCC_CSR_r*) 0x40021024UL)
 
 #define TIM2_CR1_BASE           0x40000000
 #define TIM2_CEN                (1 << 0)    // Counter Enable
@@ -860,6 +858,24 @@ typedef struct
 } EXTI_BLOCK;
 
 #define EXTI_BLOCK_REG      ((volatile EXTI_BLOCK*) 0x40010400)
+
+/******************************************************************************
+ *
+ * Watch Dog
+ *  
+******************************************************************************/
+
+
+typedef struct
+{
+    REG_TYPE KEY_R;         // [IWDG_KR]
+    REG_TYPE PRESCALER_R;   // [IWDG_PR]
+    REG_TYPE RELOAD_R;      // [IWDG_RLR]
+    REG_TYPE STATUS_R;      // [IWDG_SR]
+
+} IWDG_BLOCK;
+
+#define IWDG_BLOCK_REG      ((volatile IWDG_BLOCK*) 0x40003000)
 
 /******************************************************************************
  *

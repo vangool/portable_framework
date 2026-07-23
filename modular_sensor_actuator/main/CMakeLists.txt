@@ -28,11 +28,13 @@ elseif($ENV{PLATFORM_STM32})
     	../components/my_hal/stm32/stm32f103/stm32f103.s
 	    $<TARGET_OBJECTS:my_hal>
     	$<TARGET_OBJECTS:my_os>
+		$<TARGET_OBJECTS:my_service>
 	)
 
 	target_link_libraries(firmware.elf PRIVATE
     	my_hal
 		my_os
+		my_service
 	)
 
 	target_compile_definitions(my_hal PRIVATE

@@ -21,7 +21,7 @@
  * @note This file contains STM32-specific implementation details.
  *
  * @author Michael Van Gool
- * @date 2026-07-07
+ * @date 2026-07-19
  *
  * MIT License
  *

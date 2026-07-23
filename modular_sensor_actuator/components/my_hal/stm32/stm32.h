@@ -52,11 +52,10 @@
  * SOFTWARE.
  */
 
-#ifndef __ESP32_H__
-#define __ESP32_H__
+#ifndef __STM32_H__
+#define __STM32_H__
 
-#include "../include/hal.h"
-#include "../../osal/include/osal.h"
+#include "hal.h"
 #include "stm32f103/stm32f103.h"
 #include "stm32f103/stm32f103_intr.h"
 
@@ -196,5 +195,22 @@ hal_status_t stm32_gpio_install_isr_service(hal_intr_flag_t flag);
  */
 void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...);
 
+/**
+ * @brief Enables thread scheduling.
+ *
+ * Activates task execution by allowing the scheduler to perform context
+ * switches and dispatch runnable threads. This function is typically called
+ * after the scheduler has been initialized and all initial tasks have been
+ * created.
+ *
+ * Once enabled, control may be transferred from the calling context to the
+ * scheduler, and execution will proceed according to the configured scheduling
+ * policy.
+ *
+ * @note This function should only be called after scheduler initialization.
+ *       Calling this function multiple times may have undefined behavior
+ *       depending on the scheduler implementation.
+ */
+void enable_threads(void);
 
 #endif //__STM32_H__

@@ -41,7 +41,7 @@
 #ifndef __STM32_FUNC_H__
 #define __STM32_FUNC_H__
 
-#include "../include/hal.h"
+#include "hal.h"
 
 #include "stm32f103/stm32f103.h"
 #include "stm32f103/stm32f103_intr.h"

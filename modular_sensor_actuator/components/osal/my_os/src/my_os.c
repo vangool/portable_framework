@@ -16,8 +16,8 @@
  * @date: 2026-07-14
  * @license: MIT License
  ******************************************************************************/
-#include "../include/my_os.h"
-#include "../include/scheduler.h"
+#include "my_os.h"
+#include "scheduler.h"
 
 osal_task_notify_give_from_isr  osal_task_notify_give_from_isr_func = my_os_task_notify_give_from_isr;
 osal_get_current_task_handle    osal_get_current_task_handle_func   = my_os_get_current_task_handle;

@@ -28,7 +28,7 @@
 #ifndef __ESP32_UART_H__
 #define __ESP32_UART_H__
 
-#include "../include/hal_uart.h"
+#include "hal_uart.h"
 #include "driver/uart.h"
 
 /**

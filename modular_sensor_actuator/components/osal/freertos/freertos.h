@@ -44,7 +44,7 @@
 #ifndef __FREERTOS_H__
 #define __FREERTOS_H__
 
-#include "../include/osal.h"
+#include "osal.h"
 #include "freertos/FreeRTOS.h"
 
 UINT_M osal_max_delay = portMAX_DELAY;

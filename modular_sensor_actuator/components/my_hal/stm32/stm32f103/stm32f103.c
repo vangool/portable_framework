@@ -1,6 +1,6 @@
-#include "../addr.h"
+#include "addr.h"
 #include "stm32f103.h"
-#include "../stm32_func.h"
+#include "stm32_func.h"
 
 stm32fn_translate_gpio_mode stm32fn_translate_gpio_mode_func    = stm32f103_translate_gpio_mode;
 stm32fn_get_port_id stm32fn_get_port_id_func                    = stm32f103_get_port_id;

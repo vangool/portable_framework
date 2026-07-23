@@ -10,9 +10,10 @@ elseif($ENV{PLATFORM_STM32})
     add_library(my_hal STATIC
         src/hal_func.c
         stm32/stm32.c
-        stm32/stm32_uart.c
+        stm32/stm32_uart/stm32_uart.c
         stm32/stm32f103/stm32f103.c
         stm32/stm32f103/stm32f103_intr.c
+        stm32/stm32f103_watchdog/stm32f103_watchdog.c
         utils/printf/printf.c
     )
 
@@ -20,8 +21,14 @@ elseif($ENV{PLATFORM_STM32})
         include
         src
         stm32
+        stm32/stm32_uart
         stm32/stm32f103
+        stm32/stm32f103_watchdog
         utils/printf
+    )
+
+    target_link_libraries(my_hal PRIVATE
+        my_service
     )
 
 

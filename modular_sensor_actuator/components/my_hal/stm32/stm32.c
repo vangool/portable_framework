@@ -54,6 +54,7 @@
 #include "addr.h"
 #include "stm32.h"
 #include "stm32_func.h"
+#include "watchdog.h"
 
 #include "../utils/printf/printf.h"
 
@@ -69,6 +70,7 @@ hal_gpio_install_isr_service    hal_gpio_install_isr_service_func   = stm32_gpio
 hal_log                         hal_log_func                        = stm32_log;
 
 volatile uint32_t system_ms = 0;
+static uint8_t threads_enabled = 0;
 
 void Default_Handler_Loop() { while (1) {} }
 
@@ -92,14 +94,21 @@ void MemManage_Handler(void) { Default_Handler_Loop(); }
 void BusFault_Handler(void) { Default_Handler_Loop(); }
 void UsageFault_Handler(void) { Default_Handler_Loop(); }
 
-void SVC_Handler(void) {}
 void DebugMon_Handler(void) {}
+
+void enable_threads(void)
+{
+    threads_enabled = 1;
+}
 
 void SysTick_Handler(void)
 {
     system_ms++;
 
-    SYS_CTRL_BLOCK->ICSR.bits.PEND_SV_SET = 1;
+    if(threads_enabled && !(system_ms % 100))
+    {
+        SYS_CTRL_BLOCK->ICSR.bits.PEND_SV_SET = 1;
+    }
 }
 
 hal_status_t stm32_gpio_set_direction(uint8_t pin, hal_gpio_config_t direction)
@@ -377,9 +386,26 @@ void stm32_log(hal_log_level_t level, const char *tag, const char *fmt, ...)
     while (!(USART1_REG->SR.bits.TC));
 }
 
+void check_last_shutdown()
+{
+    const uint8_t num_of_flags = 6;
+    const uint32_t rst_flag_mask = (((1 << num_of_flags) - 1) << (32 - num_of_flags));
+    uint32_t shutdown_code = ((RCC_CSR_REG->all) & rst_flag_mask);
+
+    if( (shutdown_code >> 25) & 1 | // Reset pin reset
+        (shutdown_code >> 26) & 1 | // Power on reset
+        (shutdown_code >> 27) & 1 | // Software reset
+        (shutdown_code >> 31) & 1   // Low power reset
+    )
+    {
+        return;
+    }
+}
+
 
 void system_init()
 {
+    check_last_shutdown();
     stm32_clock_init();
 
     if(stm32fn_verify_pin_func(LOGGING_PIN) != HAL_STATUS_OK)

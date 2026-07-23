@@ -21,8 +21,9 @@
 
 #include <stdint.h>
 
-#include "../../include/osal.h"
-#include "../../my_hal/stm32/stm32f103/stm32f103.h"
+#include "osal.h"
+#include "stm32f103.h"
+#include "watchdog.h"
 
 typedef enum
 {
@@ -38,6 +39,7 @@ typedef struct
     osal_function_ptr func;
     uint32_t next_wakeup;
     osal_thread_state_t state; 
+    wd_client_id_t watchdog_id;
 } osal_taskctrlb_t;
 
 /**

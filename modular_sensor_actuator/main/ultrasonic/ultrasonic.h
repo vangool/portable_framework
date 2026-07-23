@@ -42,8 +42,8 @@
 
 #include <stdbool.h>
 
-#include "../../components/my_hal/include/hal.h"
-#include "../../components/osal/include/osal.h"
+#include "hal.h"
+#include "osal.h"
 
 #ifdef __cplusplus
 extern "C" {

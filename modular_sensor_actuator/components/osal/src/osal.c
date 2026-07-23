@@ -13,7 +13,7 @@
  * @license: MIT License (See header file for full license conditions)
  * Copyright (c) 2026 Michael Van Gool. All rights reserved.
  ******************************************************************************/
-#include "../include/osal.h"
+#include "osal.h"
 
 osal_task_notify_give_from_isr  osal_task_notify_give_from_isr_func = osal_task_notify_give_from_isr_default;
 osal_get_current_task_handle    osal_get_current_task_handle_func   = osal_get_current_task_handle_default;
