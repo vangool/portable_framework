@@ -195,10 +195,6 @@ This project was developed through an incremental refactoring process, evolving 
 The repository includes a unified `build_script.sh` engine that abstracts away individual framework build tools, handling environment configuration, cross-compilation, target flashing, and serial monitoring automatically based on your platform argument.
 
 ```bash
-# Clone the repository workspace
-git clone [https://github.com/vangool/portable_framework.git](https://github.com/vangool/portable_framework.git)
-cd modular-sensor-actuator
-
 # Make the automation engine executable
 chmod +x build_script.sh
 
