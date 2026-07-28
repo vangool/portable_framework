@@ -5,8 +5,8 @@ This repository contains the project within a subdirectory.
 ## Clone the repository
 
 ```bash
-git clone <git@github.com:vangool/portable_framework.git>
-cd <portable_framework>
+git clone git@github.com:vangool/portable_framework.git
+cd portable_framework
 git submodule update --init --recursive
 ```
 
