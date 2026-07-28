@@ -92,8 +92,8 @@ osal_result_t freertos_create_task(
     osal_ubase_type priority,
     osal_taskhandle_t *task_handler_var);
 
-osal_base_type freertos_pop_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
-osal_base_type freertos_push_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+osal_base_type freertos_dequeue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+osal_base_type freertos_enqueue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
 osal_queue_t freertos_create_queue(osal_ubase_type queue_length, osal_ubase_type item_size);
 
 

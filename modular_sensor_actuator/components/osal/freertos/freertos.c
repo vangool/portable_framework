@@ -25,8 +25,8 @@ osal_get_tick_count             osal_get_tick_count_func            = freertos_g
 osal_action_upon_notification   osal_action_upon_notification_func  = freertos_action_upon_notification;
 osal_create_task                osal_create_task_func               = freertos_create_task;
 osal_create_queue               osal_create_queue_func              = freertos_create_queue;
-osal_pop_queue                  osal_pop_queue_func                 = freertos_pop_queue;
-osal_push_queue                 osal_push_queue_func                = freertos_push_queue;
+osal_enqueue                    osal_enqueue_func                   = freertos_enqueue;
+osal_dequeue                    osal_dequeue_func                   = freertos_dequeue;
 
 
 static osal_result_t translate_result(BaseType_t result)
@@ -92,14 +92,18 @@ osal_result_t freertos_create_task(
     );
 }
 
-osal_base_type freertos_pop_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
+osal_base_type freertos_dequeue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
 {
-    return (osal_base_type)xQueueReceive((QueueHandle_t) queue.queue, pvBuffer, (TickType_t) wait_time);
+    osal_base_type ret = 
+        xQueueReceive((QueueHandle_t) queue.queue, pvBuffer, (TickType_t) wait_time);
+    return translate_result(ret);
 }
 
-osal_base_type freertos_push_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
+osal_base_type freertos_enqueue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
 {
-    return (osal_base_type)xQueueSend((QueueHandle_t) queue.queue, pvBuffer, (TickType_t) wait_time);
+    osal_base_type ret = 
+        xQueueSend((QueueHandle_t) queue.queue, pvBuffer, (TickType_t) wait_time);
+    return translate_result(ret);
 }
 
 osal_queue_t freertos_create_queue(osal_ubase_type queue_length, osal_ubase_type item_size)

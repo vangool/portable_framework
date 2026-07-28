@@ -26,8 +26,8 @@ osal_task_delay_until_ms        osal_task_delay_until_ms_func       = my_os_task
 osal_get_tick_count             osal_get_tick_count_func            = my_os_get_tick_count;
 osal_action_upon_notification   osal_action_upon_notification_func  = my_os_action_upon_notification;
 osal_create_task                osal_create_task_func               = my_os_create_task;
-osal_pop_queue                  osal_pop_queue_func                 = my_os_pop_queue;
-osal_push_queue                 osal_push_queue_func                = my_os_push_queue;
+osal_dequeue                    osal_dequeue_func                   = my_os_dequeue;
+osal_enqueue                    osal_enqueue_func                   = my_os_enqueue;
 osal_create_queue               osal_create_queue_func              = my_os_create_queue;
 
 void my_os_task_notify_give_from_isr(osal_taskhandle_t taskhandle){}
@@ -65,12 +65,12 @@ osal_result_t my_os_create_task(
     create_task(task_function, pvParameters);
 }
 
-osal_base_type my_os_pop_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
+osal_base_type my_os_enqueue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
 {
     return -1;
 }
 
-osal_base_type my_os_push_queue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
+osal_base_type my_os_dequeue(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time)
 {
     return -1;
 }

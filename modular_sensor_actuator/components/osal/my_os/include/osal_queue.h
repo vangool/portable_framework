@@ -28,11 +28,12 @@
  */
 typedef struct 
 {
-    void** buffer;      // Array of item pointers
+    void* buffer;       // Array of item pointers
     uint8_t head_idx;   // Next item to dequeue
     uint8_t tail_idx;   // Next slot to enqueue
     uint8_t capacity;   // Maximum number of items
     uint8_t count;      // Current number of items
+    uint64_t item_size; // Size of each item
 
 } my_os_queue_t;
 
@@ -41,9 +42,11 @@ typedef struct
  * Initialize queue with user-provided pointer storage.
  * No memory allocation is performed.
  */
-osal_status_t queue_create(osal_queue_t* queue,
-                           void** buffer,
-                           uint8_t queue_size);
+osal_status_t queue_create(
+    osal_queue_t *queue,
+    uint8_t* buffer,
+    osal_ubase_type queue_length,
+    osal_ubase_type item_size);
 
 
 /*
@@ -60,7 +63,7 @@ osal_status_t queue_enqueue(osal_queue_t* queue,
  * Returns OSAL_ERROR_EMPTY if empty.
  */
 osal_status_t queue_dequeue(osal_queue_t* queue,
-                            void** data);
+                            void* data);
 
 
 #endif // __OS_QUEUE_H__

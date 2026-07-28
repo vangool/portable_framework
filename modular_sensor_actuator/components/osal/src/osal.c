@@ -22,8 +22,8 @@ osal_task_delay_until_ms        osal_task_delay_until_ms_func       = osal_task_
 osal_get_tick_count             osal_get_tick_count_func            = osal_get_tick_count_default;
 osal_action_upon_notification   osal_action_upon_notification_func  = osal_action_upon_notification_default;
 osal_create_task                osal_create_task_func               = osal_create_task_default;
-osal_pop_queue                  osal_pop_queue_func                 = osal_pop_queue_default;
-osal_push_queue                 osal_push_queue_func                = osal_push_queue_default;
+osal_dequeue                    osal_dequeue_func                   = osal_dequeue_default;
+osal_enqueue                    osal_enqueue_func                   = osal_enqueue_default;
 osal_create_queue               osal_create_queue_func              = osal_create_queue_default;
 
 

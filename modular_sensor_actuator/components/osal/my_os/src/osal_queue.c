@@ -31,45 +31,74 @@
 
 #include "osal_queue.h"
 
+#include "scheduler.h"
 
-osal_status_t queue_create(osal_queue_t* queue_t, void** buffer, uint8_t list_size)
+static void queue_copy(uint8_t *dst, const uint8_t *src, uint32_t size)
+{
+    while(size--)
+    {
+        *dst++ = *src++;
+    }
+}
+
+osal_status_t queue_create(
+    osal_queue_t *queue,
+    uint8_t* buffer,
+    osal_ubase_type queue_length,
+    osal_ubase_type item_size)
 {
 
-    my_os_queue_t* queue = (my_os_queue_t*)queue_t->queue;
-    queue->head_idx = 0;
-    queue->tail_idx = 0;
-    queue->capacity = list_size;
-    queue->count = 0;
-    queue->buffer = buffer;
+    my_os_queue_t* my_queue = (my_os_queue_t*)queue->queue;
+    my_queue->head_idx = 0;
+    my_queue->tail_idx = 0;
+    my_queue->capacity = queue_length;
+    my_queue->item_size = item_size;
+    my_queue->count = 0;
+    my_queue->buffer = buffer;
     return OSAL_OK;
 }
 
-osal_status_t queue_enqueue(osal_queue_t* queue_t, void* data)
+osal_status_t queue_enqueue(osal_queue_t* queue, void* data)
 {
-    my_os_queue_t* queue = (my_os_queue_t*)queue_t->queue;
-    if(queue->count >= queue->capacity)
+    scheduler_enter_critical();
+    my_os_queue_t* my_queue = (my_os_queue_t*)queue->queue;
+    if(my_queue->count >= my_queue->capacity)
     {
         return OSAL_ERROR_OVERFLOW;
     }
 
-    queue->buffer[queue->tail_idx] = data;
+    queue_copy(
+        my_queue->buffer + my_queue->tail_idx * my_queue->item_size,
+        data,
+        my_queue->item_size
+    );
 
-    queue->tail_idx = (queue->tail_idx + 1) % queue->capacity;
-    queue->count++;
+    my_queue->tail_idx = (my_queue->tail_idx + 1) % my_queue->capacity;
+    my_queue->count++;
+
+    scheduler_exit_critical();
 
     return OSAL_OK;
 }
 
-osal_status_t queue_dequeue(osal_queue_t* queue_t, void** data)
+osal_status_t queue_dequeue(osal_queue_t* queue, void* data)
 {
-    my_os_queue_t* queue = (my_os_queue_t*)queue_t->queue;
-    if(queue->count == 0)
+    scheduler_enter_critical();
+    my_os_queue_t* my_queue = (my_os_queue_t*)queue->queue;
+    if(my_queue->count == 0)
     {
         return OSAL_ERROR_GENERAL;
     }
 
-    *data = queue->buffer[queue->head_idx];
-    queue->count--;
-    queue->head_idx = (queue->head_idx + 1) % queue->capacity;
+    queue_copy(
+        data,
+        my_queue->buffer + my_queue->head_idx * my_queue->item_size,
+        my_queue->item_size
+    );
+    my_queue->count--;
+    my_queue->head_idx = (my_queue->head_idx + 1) % my_queue->capacity;
+
+    scheduler_exit_critical();
+
     return OSAL_OK;
 }

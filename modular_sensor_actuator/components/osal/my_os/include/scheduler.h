@@ -87,6 +87,26 @@ void update_wakeup(uint32_t time, uint32_t delay);
 void scheduler_run(void);
 
 /**
+ * @brief Enters a scheduler critical section.
+ *
+ * Prevents task scheduling and context switches while the critical section
+ * is active. Critical sections may be nested if supported by the scheduler,
+ * and each call to this function must be paired with a corresponding call
+ * to scheduler_exit_critical().
+ */
+void scheduler_enter_critical(void);
+
+/**
+ * @brief Exits a scheduler critical section.
+ *
+ * Restores normal scheduler operation after leaving a critical section.
+ * This function must be called once for every preceding call to
+ * scheduler_enter_critical(). When the outermost critical section is exited,
+ * task scheduling and context switching are re-enabled.
+ */
+void scheduler_exit_critical(void);
+
+/**
  * @brief Starts the scheduler.
  *
  * Creates the idle task, marks it as the initial running task, and

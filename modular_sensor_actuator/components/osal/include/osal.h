@@ -60,9 +60,11 @@ typedef enum
 {
     OSAL_OK = 0,
     OSAL_ERROR_GENERAL,
+    OSAL_ERROR_INVALID_ARG,
     OSAL_ERROR_TIMEOUT,
     OSAL_ERROR_DEFAULT_IMPLEMENTATION,
-    OSAL_ERROR_OVERFLOW
+    OSAL_ERROR_OVERFLOW,
+    OSAL_ERROR_EMPTY
 } osal_status_t;
 
 typedef enum 
@@ -218,7 +220,7 @@ typedef osal_result_t (*osal_create_task)(
  *
  * @return A base status code mapping to native success (`true`) or timeout failure (`false`).
  */
-typedef osal_base_type (*osal_pop_queue)(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+typedef osal_base_type (*osal_dequeue)(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
 
 /**
  * @brief Function pointer type for pushing (sending) data into a thread-safe message queue.
@@ -232,7 +234,7 @@ typedef osal_base_type (*osal_pop_queue)(osal_queue_t queue, void* pvBuffer, osa
  *
  * @return A base status code mapping to native success (`true`) or timeout failure (`false`).
  */
-typedef osal_base_type (*osal_push_queue)(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+typedef osal_base_type (*osal_enqueue)(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
 
 /**
  * @brief Function pointer type for instantiating a thread-safe message queue peripheral.
@@ -255,8 +257,8 @@ extern osal_task_delay_until_ms osal_task_delay_until_ms_func;
 extern osal_get_tick_count osal_get_tick_count_func;
 extern osal_action_upon_notification osal_action_upon_notification_func;
 extern osal_create_task osal_create_task_func;
-extern osal_pop_queue osal_pop_queue_func;
-extern osal_push_queue osal_push_queue_func;
+extern osal_dequeue osal_dequeue_func;
+extern osal_enqueue osal_enqueue_func;
 extern osal_create_queue osal_create_queue_func;
 
 /* Default OS Implementations */
@@ -274,8 +276,8 @@ osal_result_t osal_create_task_default(
     osal_ubase_type priority,
     osal_taskhandle_t* task_handler_var);
 
-osal_base_type osal_pop_queue_default(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
-osal_base_type osal_push_queue_default(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+osal_base_type osal_dequeue_default(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
+osal_base_type osal_enqueue_default(osal_queue_t queue, void* pvBuffer, osal_Tick wait_time);
 osal_queue_t osal_create_queue_default(osal_ubase_type queue_length, osal_ubase_type item_size);
 
 

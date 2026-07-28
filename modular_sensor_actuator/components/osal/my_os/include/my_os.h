@@ -38,6 +38,8 @@
 
 #include "osal.h"
 
+UINT_M osal_max_delay = ~0;
+
 /**
  * @brief Sends a task notification from an Interrupt Service Routine (ISR).
  *
@@ -161,7 +163,7 @@ osal_result_t my_os_create_task(
  * 
  * @return Backend-specific queue operation result.
  */
-osal_base_type my_os_pop_queue(osal_queue_t queue,
+osal_base_type my_os_dequeue(osal_queue_t queue,
                                void* pvBuffer,
                                osal_Tick wait_time);
 
@@ -180,7 +182,7 @@ osal_base_type my_os_pop_queue(osal_queue_t queue,
  * 
  * @return Backend-specific queue operation result.
  */
-osal_base_type my_os_push_queue(osal_queue_t queue,
+osal_base_type my_os_enqueue(osal_queue_t queue,
                                 void* pvBuffer,
                                 osal_Tick wait_time);
 

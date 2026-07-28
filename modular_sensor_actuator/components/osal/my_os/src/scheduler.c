@@ -12,7 +12,7 @@
  * systems.
  *
  * @author: Michael Van Gool
- * @date: 2026-07-22
+ * @date: 2026-07-14
  * @license: MIT License
  ******************************************************************************/
 
@@ -35,6 +35,7 @@
 
 /* Pointer to the currently executing task. Updated during every context switch. */
 osal_taskctrlb_t* current_tcb = NULL;
+static uint8_t scheduler_lock_count = 0;
 
 /* Static Task Control Block (TCB) storage. */
 alignas(8) static osal_taskctrlb_t tasks[MAX_TASK_COUNT];
@@ -63,8 +64,6 @@ static void idle_task(void);
  */
 static void idle_task(void)
 {
-    watchdog_feed(tasks[0].watchdog_id);
-    watchdog_check();
     while (1)
     {
         __asm volatile("wfi");
@@ -158,13 +157,12 @@ void update_wakeup(uint32_t time, uint32_t delay)
 {
     current_tcb->next_wakeup = time + delay;
     current_tcb->state = THREAD_SLEEP;
-    watchdog_feed(current_tcb->watchdog_id);
     SYS_CTRL_BLOCK->ICSR.bits.PEND_SV_SET = 1;
 }
 
 void scheduler_run()
 {
-    if(task_count <= 1)
+    if(task_count <= 1 || scheduler_lock_count > 0)
     {
         return;
     }
@@ -204,4 +202,14 @@ void scheduler_run()
         current_tcb = &tasks[0];
         current_tcb->state = THREAD_RUNNING;
     }
+}
+
+void scheduler_enter_critical(void)
+{
+    scheduler_lock_count++;
+}
+
+void scheduler_exit_critical(void)
+{
+    scheduler_lock_count--;
 }

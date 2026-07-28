@@ -22,7 +22,11 @@ SECTIONS
     _etext = .;
   } > FLASH
 
-  .data : AT(_etext)
+  .ARM.exidx : {
+    *(.ARM.exidx*)
+  } > FLASH
+
+  .data : 
   {
     _sdata = .;
     *(.data*)

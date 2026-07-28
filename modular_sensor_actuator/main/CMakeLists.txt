@@ -49,6 +49,7 @@ elseif($ENV{PLATFORM_STM32})
 		-g3 
 		-ffreestanding 
 		-nostartfiles
+		--specs=nano.specs
 		)
 
 	target_link_options(firmware.elf PRIVATE 
